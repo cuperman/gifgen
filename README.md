@@ -1,0 +1,3 @@
+# gifgen
+
+Gif generator service

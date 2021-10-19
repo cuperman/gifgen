@@ -1,0 +1,7 @@
+
+node_modules/
+yarn-error.log
+
+# Ignore user config files
+.vscode/
+.DS_Store
