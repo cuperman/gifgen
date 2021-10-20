@@ -1,28 +1,47 @@
 {
   "name": "@cuperman/gifgen-infrastructure",
-  "version": "0.1.0",
+  "description": "Infrastructure for GifGen service",
   "license": "MIT",
+  "version": "0.1.0",
+  "author": {
+    "name": "Jeff Cooper",
+    "email": "jeff@cuperman.net"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cuperman/gifgen",
+    "path": "packages/infrastructure"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "bin": {
-    "infrastructure": "bin/infrastructure.js"
+    "gifgen": "dist/bin/gifgen.js"
   },
   "scripts": {
+    "clean": "rm -rf ./dist",
     "build": "tsc",
-    "watch": "tsc -w",
     "test": "jest",
+    "prepare": "run-s clean build",
+    "prepublishOnly": "run-s test",
     "cdk": "cdk"
   },
   "devDependencies": {
     "@aws-cdk/assert": "1.128.0",
     "@types/jest": "^26.0.10",
     "@types/node": "10.17.27",
-    "jest": "^26.4.2",
-    "ts-jest": "^26.2.0",
     "aws-cdk": "1.128.0",
+    "jest": "^26.4.2",
+    "npm-run-all": "^4.1.5",
+    "ts-jest": "^26.2.0",
     "ts-node": "^9.0.0",
     "typescript": "~3.9.7"
   },
   "dependencies": {
+    "@aws-cdk/aws-apigateway": "^1.128.0",
+    "@aws-cdk/aws-lambda": "^1.128.0",
     "@aws-cdk/core": "1.128.0",
+    "@cuperman/gifgen-apihandler": "^0.1.0",
     "source-map-support": "^0.5.16"
   }
 }

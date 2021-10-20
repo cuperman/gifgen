@@ -5,4 +5,4 @@ import { GifGenStack } from '../lib/gifgen-stack';
 
 const app = new cdk.App();
 
-new GifGenStack(app, 'GitGen');
+new GifGenStack(app, 'GifGen');
