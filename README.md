@@ -23,7 +23,7 @@ GifGen.RestApiEndpoint1234567A = https://ab01c2def3.execute-api.us-east-1.amazon
 
 Use this to create gif URLs, like:
 
-https://ab01c2def3.execute-api.us-east-1.amazonaws.com/prod/random/success.gif
+`https://ab01c2def3.execute-api.us-east-1.amazonaws.com/prod/random/success.gif`
 
 Supported endpoints:
 
