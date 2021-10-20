@@ -27,10 +27,10 @@ https://ab01c2def3.execute-api.us-east-1.amazonaws.com/prod/random/success.gif
 
 Supported endpoints:
 
-* /random/:tag.gif
-* /search/:term.gif
-* /translate/:term.gif
-* /trending.gif
+* `/random/{tag}.gif`
+* `/search/{term}.gif`
+* `/translate/{term}.gif`
+* `/trending.gif`
 
 ## Develop
 
