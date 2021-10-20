@@ -2,7 +2,7 @@
   "name": "@cuperman/gifgen-apihandler",
   "description": "Lambda handler for GifGen rest api",
   "license": "MIT",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": {
     "name": "Jeff Cooper",
     "email": "jeff@cuperman.net"
