@@ -1,81 +1,87 @@
-import * as aws from 'aws-lambda';
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 
-export async function handleTrending(event: aws.APIGatewayProxyEvent): Promise<aws.APIGatewayProxyResult> {
-  console.log('event', JSON.stringify(event, null, 2));
-
-  const data = '';
+export async function handleTrending(_event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+  const data = ''; // get data from trending api
+  const buffer = Buffer.from(data, 'utf8');
 
   return {
     statusCode: 200,
     headers: {
-      'Accept-Ranges': '',
-      'Content-Type': 'image/gif',
-      'Content-Length': '',
-      ETag: '',
-      'Last-Modified': ''
+      'Content-Type': 'text/plain'
     },
-    body: data.toString()
-    // body: data.toString('base64'),
-    // isBase64Encoded: true
+    body: buffer.toString('base64'),
+    isBase64Encoded: true
   };
 }
 
-export async function handleSearch(event: aws.APIGatewayProxyEvent): Promise<aws.APIGatewayProxyResult> {
-  console.log('event', JSON.stringify(event, null, 2));
+export async function handleSearch(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+  if (typeof event.pathParameters?.term === 'undefined') {
+    return {
+      statusCode: 400,
+      body: 'bad request'
+    };
+  }
 
-  const data = '';
+  const term = event.pathParameters.term;
+  console.log('search term', term);
+
+  const data = ''; // get data from search api
+  const buffer = Buffer.from(data, 'utf8');
 
   return {
     statusCode: 200,
     headers: {
-      'Accept-Ranges': '',
-      'Content-Type': 'image/gif',
-      'Content-Length': '',
-      ETag: '',
-      'Last-Modified': ''
+      'Content-Type': 'text/plain'
     },
-    body: data.toString()
-    // body: data.toString('base64'),
-    // isBase64Encoded: true
+    body: buffer.toString('base64'),
+    isBase64Encoded: true
   };
 }
 
-export async function handleTranslate(event: aws.APIGatewayProxyEvent): Promise<aws.APIGatewayProxyResult> {
-  console.log('event', JSON.stringify(event, null, 2));
+export async function handleTranslate(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+  if (typeof event.pathParameters?.term === 'undefined') {
+    return {
+      statusCode: 400,
+      body: 'bad request'
+    };
+  }
 
-  const data = '';
+  const term = event.pathParameters.term;
+  console.log('search term', term);
+
+  const data = ''; // get data from translate api
+  const buffer = Buffer.from(data, 'utf8');
 
   return {
     statusCode: 200,
     headers: {
-      'Accept-Ranges': '',
-      'Content-Type': 'image/gif',
-      'Content-Length': '',
-      ETag: '',
-      'Last-Modified': ''
+      'Content-Type': 'text/plain'
     },
-    body: data.toString()
-    // body: data.toString('base64'),
-    // isBase64Encoded: true
+    body: buffer.toString('base64'),
+    isBase64Encoded: true
   };
 }
 
-export async function handleRandom(event: aws.APIGatewayProxyEvent): Promise<aws.APIGatewayProxyResult> {
-  console.log('event', JSON.stringify(event, null, 2));
+export async function handleRandom(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+  if (typeof event.pathParameters?.tag === 'undefined') {
+    return {
+      statusCode: 400,
+      body: 'bad request'
+    };
+  }
 
-  const data = '';
+  const tag = event.pathParameters.tag;
+  console.log('random tag', tag);
+
+  const data = ''; // get data from random api
+  const buffer = Buffer.from(data, 'utf8');
 
   return {
     statusCode: 200,
     headers: {
-      'Accept-Ranges': '',
-      'Content-Type': 'image/gif',
-      'Content-Length': '',
-      ETag: '',
-      'Last-Modified': ''
+      'Content-Type': 'text/plain'
     },
-    body: data.toString()
-    // body: data.toString('base64'),
-    // isBase64Encoded: true
+    body: buffer.toString('base64'),
+    isBase64Encoded: true
   };
 }
