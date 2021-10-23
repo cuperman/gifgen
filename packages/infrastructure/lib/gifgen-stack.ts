@@ -11,7 +11,7 @@ export class GifGenStack extends cdk.Stack {
     super(scope, id, props);
 
     const restApi = new apigw.RestApi(this, 'RestApi', {
-      binaryMediaTypes: ['*~1*']
+      binaryMediaTypes: ['*/*']
     });
 
     const handlerRuntime = lambda.Runtime.NODEJS_14_X;
