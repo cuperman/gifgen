@@ -1,8 +1,12 @@
 {
   "name": "@cuperman/gifgen-root",
   "private": true,
+  "engines": {
+    "node": "14.x"
+  },
   "scripts": {
-    "lerna": "lerna"
+    "lerna": "lerna",
+    "cdk": "lerna run --scope @cuperman/gifgen-infrastructure cdk -- --"
   },
   "devDependencies": {
     "lerna": "^4.0.0"
