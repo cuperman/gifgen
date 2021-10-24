@@ -13,7 +13,7 @@ npx aws-cdk deploy --app "npx @cuperman/gifgen-infrastructure" GifGen
 Deploy with observability
 
 ```bash
-npx aws-cdk deploy --app "npx @cuperman/gifgen-infrastructure" --context observe GifGen
+npx aws-cdk deploy --app "npx @cuperman/gifgen-infrastructure" GifGen --context observe
 ```
 
 ## Use
