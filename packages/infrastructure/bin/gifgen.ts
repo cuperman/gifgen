@@ -1,8 +1,15 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import * as cdk from '@aws-cdk/core';
-import { GifGenStack } from '../lib/gifgen-stack';
+import { GifGenStack, LogLevel } from '../lib/gifgen-stack';
 
 const app = new cdk.App();
 
-new GifGenStack(app, 'GifGen');
+// observability flag enables metrics, tracing, and info logging
+const observe = app.node.tryGetContext('observe') === 'true';
+
+new GifGenStack(app, 'GifGen', {
+  enableMetrics: !!observe,
+  enableTracing: !!observe,
+  logLevel: !!observe ? LogLevel.INFO : undefined
+});
