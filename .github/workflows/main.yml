@@ -30,27 +30,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: node --version
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      - name: Log node and yarn versions
         run: |
           node --version
           yarn --version
 
       - name: Install dependencies
-        uses: CultureHQ/actions-yarn@master
-        with:
-          args: install
+        run: yarn
 
       - name: Bootstrap packages
-        uses: CultureHQ/actions-yarn@master
-        with:
-          args: lerna bootstrap
+        run: yarn lerna bootstrap
 
       - name: Test packages
-        uses: CultureHQ/actions-yarn@master
-        with:
-          args: lerna run test
+        run: yarn lerna run test
