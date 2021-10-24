@@ -1,6 +1,9 @@
 {
   "name": "@cuperman/gifgen-root",
   "private": true,
+  "engines": {
+    "node": "14.x"
+  },
   "scripts": {
     "lerna": "lerna"
   },
