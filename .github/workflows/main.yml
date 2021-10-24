@@ -43,3 +43,6 @@ jobs:
 
       - name: Test packages
         run: yarn lerna run test
+
+      - name: Synthesize infrastructure
+        run: yarn cdk synth
