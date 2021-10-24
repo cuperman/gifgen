@@ -40,11 +40,27 @@ Supported endpoints:
 
 ## Develop
 
-Useful commands
+Commands to install, build, and test
 
 ```bash
+nvm use
 yarn
 yarn lerna bootstrap
 yarn lerna run test
+```
+
+You can also run CDK commands from the root
+
+```bash
+yarn cdk list
+yarn cdk synth
+yarn cdk diff
+yarn cdk deploy
+yarn cdk destroy
+```
+
+Use lerna publish to release
+
+```bash
 yarn lerna publish [bump]
 ```
