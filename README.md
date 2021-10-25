@@ -10,6 +10,12 @@ Deploy the infrastructure to your AWS account with CDK
 npx aws-cdk deploy --app "npx @cuperman/gifgen-infrastructure" GifGen
 ```
 
+Deploy with observability
+
+```bash
+npx aws-cdk deploy --app "npx @cuperman/gifgen-infrastructure" GifGen --context observe
+```
+
 ## Use
 
 When the deployment is complete, it will output the rest api endpoint, which can be used to generate gif files
@@ -34,11 +40,27 @@ Supported endpoints:
 
 ## Develop
 
-Useful commands
+Commands to install, build, and test
 
 ```bash
+nvm use
 yarn
 yarn lerna bootstrap
 yarn lerna run test
+```
+
+You can also run CDK commands from the root
+
+```bash
+yarn cdk list
+yarn cdk synth
+yarn cdk diff
+yarn cdk deploy
+yarn cdk destroy
+```
+
+Use lerna publish to release
+
+```bash
 yarn lerna publish [bump]
 ```

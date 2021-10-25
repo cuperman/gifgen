@@ -85,8 +85,8 @@ async function main(req: http.IncomingMessage, res: http.ServerResponse) {
     });
   }
 
-  const buffer = Buffer.from(result.body, result.isBase64Encoded ? 'base64' : 'utf8');
-  res.write(buffer.toString('utf8'));
+  const buffer = Buffer.from(result.body, result.isBase64Encoded ? 'base64' : 'binary');
+  res.write(buffer.toString('binary'), 'binary');
 
   res.end();
 }
