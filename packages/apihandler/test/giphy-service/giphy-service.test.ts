@@ -63,7 +63,7 @@ describe('GiphyService', () => {
 
     it('throws an error', async () => {
       expect(giphyService.getTrending()).rejects.toEqual(
-        'Error when fetching from https://api.giphy.com/v1/gifs/trending?api_key=bad+key&limit=1&rating=g'
+        'Error when fetching from https://api.giphy.com/v1/gifs/trending?api_key=bad+key&limit=1&rating=g (403)\n{"message":"Invalid authentication credentials"}\n'
       );
     });
   });

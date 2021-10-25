@@ -53,8 +53,7 @@ export class GiphyService {
 
     if (!response.ok) {
       const errorBody = await response.text();
-      console.error(errorBody);
-      throw new Error(`Error when fetching from ${url}`);
+      throw `Error when fetching from ${url} (${response.status})\n${errorBody}`;
     }
 
     return response.json();
