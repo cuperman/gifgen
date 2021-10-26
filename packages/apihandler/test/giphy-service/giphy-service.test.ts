@@ -34,9 +34,9 @@ describe('GiphyService', () => {
       it('fetches trending', async () => {
         const { nockDone } = await nockBack('search.json', nockOptions);
         const response = await giphyService.getSearch('ye');
-        const responseBody = await response.responseBody;
-        expect(responseBody.data).toBeInstanceOf(Array);
-        expect(responseBody.data[0].url).toMatch(/https:\/\/giphy.com\/gifs\/.*/);
+        const body = await response.body;
+        expect(body.data).toBeInstanceOf(Array);
+        expect(body.data[0].url).toMatch(/https:\/\/giphy.com\/gifs\/.*/);
         expect(response.headers).toBeInstanceOf(Headers);
         nockDone();
       });
@@ -46,9 +46,9 @@ describe('GiphyService', () => {
       it('fetches trending', async () => {
         const { nockDone } = await nockBack('trending.json', nockOptions);
         const response = await giphyService.getTrending();
-        const responseBody = await response.responseBody;
-        expect(responseBody.data).toBeInstanceOf(Array);
-        expect(responseBody.data[0].url).toMatch(/https:\/\/giphy.com\/gifs\/.*/);
+        const body = await response.body;
+        expect(body.data).toBeInstanceOf(Array);
+        expect(body.data[0].url).toMatch(/https:\/\/giphy.com\/gifs\/.*/);
         expect(response.headers).toBeInstanceOf(Headers);
         nockDone();
       });
@@ -58,9 +58,9 @@ describe('GiphyService', () => {
       it('fetches random with given tag', async () => {
         const { nockDone } = await nockBack('random.json', nockOptions);
         const response = await giphyService.getRandom('kanye west');
-        const responseBody = await response.responseBody;
-        expect(responseBody).toEqual(expect.objectContaining({ data: expect.any(Object) }));
-        expect(responseBody.data.embed_url).toMatch(/https:\/\/giphy.com\/embed\/.*/);
+        const body = await response.body;
+        expect(body).toEqual(expect.objectContaining({ data: expect.any(Object) }));
+        expect(body.data.embed_url).toMatch(/https:\/\/giphy.com\/embed\/.*/);
         expect(response.headers).toBeInstanceOf(Headers);
         nockDone();
       });
@@ -70,9 +70,9 @@ describe('GiphyService', () => {
       it('fetches translate with given search term', async () => {
         const { nockDone } = await nockBack('translate.json', nockOptions);
         const response = await giphyService.getTranslate('yeezus');
-        const responseBody = await response.responseBody;
-        expect(responseBody).toEqual(expect.objectContaining({ data: expect.any(Object) }));
-        expect(responseBody.data.images.downsized.url).toMatch(/https:\/\/media\d?.giphy.com\/media\/.*/);
+        const body = await response.body;
+        expect(body).toEqual(expect.objectContaining({ data: expect.any(Object) }));
+        expect(body.data.images.downsized.url).toMatch(/https:\/\/media\d?.giphy.com\/media\/.*/);
         expect(response.headers).toBeInstanceOf(Headers);
         nockDone();
       });
@@ -80,9 +80,9 @@ describe('GiphyService', () => {
       it('fetches translate with given weirdness', async () => {
         const { nockDone } = await nockBack('translate_with_weirdness.json', nockOptions);
         const response = await giphyService.getTranslate('yeezus', 8);
-        const responseBody = await response.responseBody;
-        expect(responseBody).toEqual(expect.objectContaining({ data: expect.any(Object) }));
-        expect(responseBody.data.images.downsized.url).toMatch(/https:\/\/media\d?.giphy.com\/media\/.*/);
+        const body = await response.body;
+        expect(body).toEqual(expect.objectContaining({ data: expect.any(Object) }));
+        expect(body.data.images.downsized.url).toMatch(/https:\/\/media\d?.giphy.com\/media\/.*/);
         expect(response.headers).toBeInstanceOf(Headers);
         nockDone();
       });

@@ -3,7 +3,7 @@ import { URL } from 'url';
 import { Trending, Random, Translate, Search } from './types/response';
 
 interface Response<T> {
-  responseBody: Promise<T>;
+  body: Promise<T>;
   headers: Headers;
 }
 
@@ -64,7 +64,7 @@ export class GiphyService {
     }
 
     return {
-      responseBody: response.json(),
+      body: response.json(),
       headers: response.headers
     };
   }
