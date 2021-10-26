@@ -1,9 +1,11 @@
-import fetch from 'node-fetch';
+import fetch, { Headers } from 'node-fetch';
 import { URL } from 'url';
-import { TrendingResponse } from './types/trending-response';
-import { RandomResponse } from './types/random-response';
-import { TranslateResponse } from './types/translate-response';
-import { SearchResponse } from './types/search-response';
+import { Trending, Random, Translate, Search } from './types/response';
+
+interface Response<T> {
+  responseBody: Promise<T>;
+  headers: Headers;
+}
 
 export class GiphyService {
   private _baseGifUrl = 'https://api.giphy.com/v1/gifs';
@@ -15,22 +17,22 @@ export class GiphyService {
     this._apiKey = _apiKey;
   }
 
-  async getSearch(searchTerm: string): Promise<SearchResponse> {
-    return this.serviceCall(this.buildFullUrl('/search', { q: searchTerm })) as Promise<SearchResponse>;
+  async getSearch(searchTerm: string): Promise<Response<Search>> {
+    return this.serviceCall(this.buildFullUrl('/search', { q: searchTerm })) as Promise<Response<Search>>;
   }
 
-  async getTrending(): Promise<TrendingResponse> {
-    return this.serviceCall(this.buildFullUrl('/trending')) as Promise<TrendingResponse>;
+  async getTrending(): Promise<Response<Trending>> {
+    return this.serviceCall(this.buildFullUrl('/trending')) as Promise<Response<Trending>>;
   }
 
-  async getRandom(tag: string): Promise<RandomResponse> {
-    return this.serviceCall(this.buildFullUrl('/random', { tag })) as Promise<RandomResponse>;
+  async getRandom(tag: string): Promise<Response<Random>> {
+    return this.serviceCall(this.buildFullUrl('/random', { tag })) as Promise<Response<Random>>;
   }
 
-  async getTranslate(searchTerm: string, weirdness?: number): Promise<TranslateResponse> {
+  async getTranslate(searchTerm: string, weirdness?: number): Promise<Response<Translate>> {
     return this.serviceCall(
       this.buildFullUrl('/translate', { s: searchTerm, weirdness: weirdness?.toString() })
-    ) as Promise<TranslateResponse>;
+    ) as Promise<Response<Translate>>;
   }
 
   private buildFullUrl(path: string, searchParams: { [key: string]: string | undefined } = {}): string {
@@ -51,7 +53,7 @@ export class GiphyService {
     return url.toString();
   }
 
-  private async serviceCall(url: string): Promise<any> {
+  private async serviceCall(url: string): Promise<Response<any>> {
     const response = await fetch(url, {
       compress: false
     });
@@ -61,6 +63,9 @@ export class GiphyService {
       throw `Error when fetching from ${url} (${response.status})\n${errorBody}`;
     }
 
-    return response.json();
+    return {
+      responseBody: response.json(),
+      headers: response.headers
+    };
   }
 }
