@@ -3,9 +3,6 @@ import * as path from 'path';
 import { GiphyService } from '../../src/giphy-service/giphy-service';
 
 const GIPHY_API_KEY_VARIABLE = 'GIPHY_API_KEY';
-if (typeof process.env[GIPHY_API_KEY_VARIABLE] === 'undefined') {
-  console.warn(`${GIPHY_API_KEY_VARIABLE} not found in environment. Tests may fail to reach Giphy API.`);
-}
 
 describe('GiphyService', () => {
   const nockBack = nock.back;
@@ -29,10 +26,14 @@ describe('GiphyService', () => {
     nockBack.setMode('wild');
   });
 
+  describe('success', () => {
+    const giphyService = new GiphyService(process.env[GIPHY_API_KEY_VARIABLE] || '');
+
     describe('#getTrending', () => {
       it('fetches trending', async () => {
         const { nockDone } = await nockBack('trending.json', nockOptions);
         const trending = await giphyService.getTrending();
+        expect(trending.data).toBeInstanceOf(Array);
         expect(trending.data[0].url).toMatch(/https:\/\/giphy.com\/gifs\/.*/);
         nockDone();
       });
@@ -42,6 +43,7 @@ describe('GiphyService', () => {
       it('fetches random with given tag', async () => {
         const { nockDone } = await nockBack('random.json', nockOptions);
         const random = await giphyService.getRandom('kanye west');
+        expect(random).toEqual(expect.objectContaining({ data: expect.any(Object) }));
         expect(random.data.embed_url).toMatch(/https:\/\/giphy.com\/embed\/.*/);
         nockDone();
       });
@@ -50,8 +52,9 @@ describe('GiphyService', () => {
     describe('#getTranslate', () => {
       it('fetches translate with given search term', async () => {
         const { nockDone } = await nockBack('translate.json', nockOptions);
-        const random = await giphyService.getTranslate('yeezus');
-        expect(random.data.images.downsized.url).toMatch(/https:\/\/media\d?.giphy.com\/media\/.*/);
+        const translate = await giphyService.getTranslate('yeezus');
+        expect(translate).toEqual(expect.objectContaining({ data: expect.any(Object) }));
+        expect(translate.data.images.downsized.url).toMatch(/https:\/\/media\d?.giphy.com\/media\/.*/);
         nockDone();
       });
     });
