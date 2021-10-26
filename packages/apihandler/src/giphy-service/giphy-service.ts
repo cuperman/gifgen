@@ -22,9 +22,9 @@ export class GiphyService {
     return this.serviceCall(this.buildFullUrl('/random', { tag })) as Promise<RandomResponse>;
   }
 
-  async getTranslate(searchTerm: string, weirdness?: string): Promise<TranslateResponse> {
+  async getTranslate(searchTerm: string, weirdness?: number): Promise<TranslateResponse> {
     return this.serviceCall(
-      this.buildFullUrl('/translate', { s: searchTerm, weirdness: weirdness })
+      this.buildFullUrl('/translate', { s: searchTerm, weirdness: weirdness?.toString() })
     ) as Promise<TranslateResponse>;
   }
 

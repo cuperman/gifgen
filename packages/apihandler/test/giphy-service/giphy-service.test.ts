@@ -57,6 +57,14 @@ describe('GiphyService', () => {
         expect(translate.data.images.downsized.url).toMatch(/https:\/\/media\d?.giphy.com\/media\/.*/);
         nockDone();
       });
+
+      it('fetches translate with given weirdness', async () => {
+        const { nockDone } = await nockBack('translate_with_weirdness.json', nockOptions);
+        const translate = await giphyService.getTranslate('yeezus', 8);
+        expect(translate).toEqual(expect.objectContaining({ data: expect.any(Object) }));
+        expect(translate.data.images.downsized.url).toMatch(/https:\/\/media\d?.giphy.com\/media\/.*/);
+        nockDone();
+      });
     });
   });
 
