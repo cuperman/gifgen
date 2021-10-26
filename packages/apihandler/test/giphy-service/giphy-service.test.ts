@@ -8,27 +8,26 @@ if (typeof process.env[GIPHY_API_KEY_VARIABLE] === 'undefined') {
 }
 
 describe('GiphyService', () => {
-  describe('success', () => {
-    const giphyService = new GiphyService(process.env[GIPHY_API_KEY_VARIABLE] || '');
-    const nockBack = nock.back;
-    nockBack.fixtures = path.join(__dirname, '__tapes__');
-    const nockOptions: nock.BackOptions = {
-      after: (scope: nock.Scope) => {
-        scope.filteringPath(/api_key=\w*/, 'api_key=HIDDEN_CREDENTIALS');
-      },
-      afterRecord: (defs: nock.Definition[]) => {
-        defs.forEach((def) => (def.path = def.path.replace(/api_key=\w*/, 'api_key=HIDDEN_CREDENTIALS')));
-        return defs;
-      }
-    };
+  const nockBack = nock.back;
+  nockBack.fixtures = path.join(__dirname, '__tapes__');
 
-    beforeAll(() => {
-      nockBack.setMode('record');
-    });
+  const nockOptions: nock.BackOptions = {
+    after: (scope: nock.Scope) => {
+      scope.filteringPath(/api_key=\w*/, 'api_key=HIDDEN_CREDENTIALS');
+    },
+    afterRecord: (defs: nock.Definition[]) => {
+      defs.forEach((def) => (def.path = def.path.replace(/api_key=\w*/, 'api_key=HIDDEN_CREDENTIALS')));
+      return defs;
+    }
+  };
 
-    afterAll(() => {
-      nockBack.setMode('wild');
-    });
+  beforeEach(() => {
+    nockBack.setMode('record');
+  });
+
+  afterEach(() => {
+    nockBack.setMode('wild');
+  });
 
     describe('#getTrending', () => {
       it('fetches trending', async () => {
@@ -59,12 +58,14 @@ describe('GiphyService', () => {
   });
 
   describe('failure', () => {
-    const giphyService = new GiphyService('bad key');
+    const giphyService = new GiphyService('invalid_key');
 
     it('throws an error', async () => {
-      expect(giphyService.getTrending()).rejects.toEqual(
-        'Error when fetching from https://api.giphy.com/v1/gifs/trending?api_key=bad+key&limit=1&rating=g (403)\n{"message":"Invalid authentication credentials"}\n'
+      const { nockDone } = await nockBack('invalid_key.json');
+      await expect(giphyService.getTrending()).rejects.toEqual(
+        'Error when fetching from https://api.giphy.com/v1/gifs/trending?api_key=invalid_key&limit=1&rating=g (403)\n{"message":"Invalid authentication credentials"}'
       );
+      nockDone();
     });
   });
 });
