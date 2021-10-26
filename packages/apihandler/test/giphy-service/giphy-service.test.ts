@@ -39,6 +39,16 @@ describe('GiphyService', () => {
       });
     });
 
+    describe('#getSearch', () => {
+      it('fetches trending', async () => {
+        const { nockDone } = await nockBack('search.json', nockOptions);
+        const trending = await giphyService.getSearch('ye');
+        expect(trending.data).toBeInstanceOf(Array);
+        expect(trending.data[0].url).toMatch(/https:\/\/giphy.com\/gifs\/.*/);
+        nockDone();
+      });
+    });
+
     describe('#getRandom', () => {
       it('fetches random with given tag', async () => {
         const { nockDone } = await nockBack('random.json', nockOptions);

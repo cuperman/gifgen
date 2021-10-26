@@ -3,6 +3,7 @@ import { URL } from 'url';
 import { TrendingResponse } from './types/trending-response';
 import { RandomResponse } from './types/random-response';
 import { TranslateResponse } from './types/translate-response';
+import { SearchResponse } from './types/search-response';
 
 export class GiphyService {
   private _baseGifUrl = 'https://api.giphy.com/v1/gifs';
@@ -12,6 +13,10 @@ export class GiphyService {
 
   constructor(_apiKey: string) {
     this._apiKey = _apiKey;
+  }
+
+  async getSearch(searchTerm: string): Promise<SearchResponse> {
+    return this.serviceCall(this.buildFullUrl('/search', { q: searchTerm })) as Promise<SearchResponse>;
   }
 
   async getTrending(): Promise<TrendingResponse> {
