@@ -8,7 +8,7 @@ describe('handleRandom', () => {
     }
   });
 
-  it('returns 200', async () => {
+  xit('returns 200', async () => {
     const result = await handleRandom(event);
     expect(result.statusCode).toEqual(200);
   });
@@ -21,7 +21,7 @@ describe('handleSearch', () => {
     }
   });
 
-  it('returns 200', async () => {
+  xit('returns 200', async () => {
     const result = await handleSearch(event);
     expect(result.statusCode).toEqual(200);
   });
@@ -34,7 +34,7 @@ describe('handleTranslate', () => {
     }
   });
 
-  it('returns 200', async () => {
+  xit('returns 200', async () => {
     const result = await handleTranslate(event);
     expect(result.statusCode).toEqual(200);
   });
@@ -43,7 +43,7 @@ describe('handleTranslate', () => {
 describe('handleTrending', () => {
   const event = buildEvent();
 
-  it('returns 200', async () => {
+  xit('returns 200', async () => {
     const result = await handleTrending(event);
     expect(result.statusCode).toEqual(200);
   });
