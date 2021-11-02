@@ -10,6 +10,7 @@ import fetch, { Response } from 'node-fetch';
 
 import { GiphyService } from './giphy-service';
 import { getSecretJson } from './aws';
+import { badRequest } from './http-responses';
 
 const GIPHY_SECRET_ID = process.env.GIPHY_SECRET_ID;
 
@@ -18,7 +19,12 @@ async function giphyApiToken(): Promise<string> {
     throw new Error('GIPHY_SECRET_ID required');
   }
 
+  console.log(`getting secret from "${GIPHY_SECRET_ID}"`);
   const secret = await getSecretJson(GIPHY_SECRET_ID);
+
+  if (secret && secret.apiToken) {
+    console.log('success');
+  }
 
   return secret.apiToken;
 }
@@ -36,23 +42,23 @@ function parseImageName(imageName: string): { basename: string; extension: strin
   };
 }
 
-function badRequest(): APIGatewayProxyResult {
-  return {
-    statusCode: 400,
-    body: 'bad request'
-  };
-}
-
 function errorResult(error?: any): APIGatewayProxyResult {
+  let message;
+  if (error instanceof Error) {
+    message = error.message;
+  } else {
+    message = JSON.stringify({
+      error
+    });
+  }
+
   return {
     statusCode: 500,
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({
-      error
-    })
+    body: message
   };
 }
 
@@ -82,19 +88,27 @@ async function imageResult(imageResponse: Response): Promise<APIGatewayProxyResu
   };
 }
 
-export async function handleTrending(_event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+export async function handleTrending(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+  console.log('handleTrending', event);
+
   try {
     const apiKey = await giphyApiToken();
     const giphyService = new GiphyService(apiKey);
-    const apiResponse = await giphyService.getTrending();
-    const apiResponseBody = await apiResponse.body;
 
-    const imageUrl = apiResponseBody.data.at(0)?.url;
+    console.log('getting trending image');
+    const apiResponse = await giphyService.getTrending();
+    console.log('api response', apiResponse);
+    const apiResponseBody = await apiResponse.body;
+    console.log('api response body', apiResponseBody);
+
+    const imageUrl = apiResponseBody.data[0]?.url;
     if (typeof imageUrl === 'undefined') {
       return errorResult('no results');
     }
 
+    console.log('fetching image', imageUrl);
     const imageResponse = await fetch(imageUrl);
+    console.log('image response', imageResponse);
 
     return imageResult(imageResponse);
   } catch (error) {
@@ -103,7 +117,7 @@ export async function handleTrending(_event: APIGatewayProxyEvent): Promise<APIG
 }
 
 export async function handleSearch(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
-  console.log('handleTranslate', event);
+  console.log('handleSearch', event);
 
   const imageName = event.pathParameters?.image;
   if (typeof imageName === 'undefined') {
@@ -112,18 +126,27 @@ export async function handleSearch(event: APIGatewayProxyEvent): Promise<APIGate
   }
 
   try {
+    console.log('parse image name', imageName);
     const imageDetails = parseImageName(imageName);
+    console.log('image details', imageDetails);
+
     const apiKey = await giphyApiToken();
     const giphyService = new GiphyService(apiKey);
-    const apiResponse = await giphyService.getSearch(imageDetails.basename);
-    const apiResponseBody = await apiResponse.body;
 
-    const imageUrl = apiResponseBody.data.at(0)?.url;
+    console.log(`searching for image of "${imageDetails.basename}"`);
+    const apiResponse = await giphyService.getSearch(imageDetails.basename);
+    console.log('api response', apiResponse);
+    const apiResponseBody = await apiResponse.body;
+    console.log('api response body', apiResponseBody);
+
+    const imageUrl = apiResponseBody.data[0]?.url;
     if (typeof imageUrl === 'undefined') {
       return errorResult('no results');
     }
 
+    console.log('fetching image', imageUrl);
     const imageResponse = await fetch(imageUrl);
+    console.log('image response', imageResponse);
 
     return imageResult(imageResponse);
   } catch (error) {
@@ -141,13 +164,25 @@ export async function handleTranslate(event: APIGatewayProxyEvent): Promise<APIG
   }
 
   try {
+    console.log('parse image name', imageName);
     const imageDetails = parseImageName(imageName);
+    console.log('image details', imageDetails);
+
     const apiKey = await giphyApiToken();
     const giphyService = new GiphyService(apiKey);
+
+    console.log(`translating "${imageDetails.basename}" to image`);
     const apiResponse = await giphyService.getTranslate(imageDetails.basename);
+    console.log('api response', apiResponse);
     const apiResponseBody = await apiResponse.body;
+    console.log('api response body', apiResponseBody);
+
     const imageUrl = apiResponseBody.data.image_url;
+
+    console.log('fetching image', imageUrl);
     const imageResponse = await fetch(imageUrl);
+    console.log('image response', imageResponse);
+
     return imageResult(imageResponse);
   } catch (error) {
     return errorResult(error);
@@ -164,13 +199,25 @@ export async function handleRandom(event: APIGatewayProxyEvent): Promise<APIGate
   }
 
   try {
+    console.log('parse image name', imageName);
     const imageDetails = parseImageName(imageName);
+    console.log('image details', imageDetails);
+
     const apiKey = await giphyApiToken();
     const giphyService = new GiphyService(apiKey);
+
+    console.log(`getting random image of "${imageDetails.basename}"`);
     const apiResponse = await giphyService.getRandom(imageDetails.basename);
+    console.log('api response', apiResponse);
     const apiResponseBody = await apiResponse.body;
+    console.log('api response body', apiResponseBody);
+
     const imageUrl = apiResponseBody.data.image_url;
+
+    console.log('fetching image', imageUrl);
     const imageResponse = await fetch(imageUrl);
+    console.log('image response', imageResponse);
+
     return imageResult(imageResponse);
   } catch (error) {
     return errorResult(error);
