@@ -7,7 +7,7 @@ export enum LogLevel {
   OFF = 'OFF'
 }
 
-export function methodLoggingLevel(logLevel: LogLevel): apigw.MethodLoggingLevel {
+export function toApigwLogLevel(logLevel: LogLevel): apigw.MethodLoggingLevel {
   switch (logLevel) {
     case LogLevel.INFO:
       return apigw.MethodLoggingLevel.INFO;
@@ -18,7 +18,7 @@ export function methodLoggingLevel(logLevel: LogLevel): apigw.MethodLoggingLevel
   }
 }
 
-export function xrayLoggingLevel(logLevel: LogLevel): XrayLogLevel {
+export function toXrayLogLevel(logLevel: LogLevel): XrayLogLevel {
   switch (logLevel) {
     case LogLevel.INFO:
       return XrayLogLevel.INFO;

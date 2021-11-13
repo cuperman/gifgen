@@ -4,7 +4,7 @@ import * as cdk from '@aws-cdk/core';
 import * as lambda from '@aws-cdk/aws-lambda';
 import * as apigw from '@aws-cdk/aws-apigateway';
 
-import { LogLevel, methodLoggingLevel, xrayLoggingLevel } from './logging';
+import { LogLevel, toApigwLogLevel, toXrayLogLevel } from './logging';
 import { XrayFunction, XrayFunctionProps, EncryptedSecret, MaskedParameter } from './constructs';
 
 const HANDLER_CODE_PATH = path.dirname(require.resolve('@cuperman/gifgen-apihandler/package.json'));
@@ -42,7 +42,7 @@ export class GifGenStack extends cdk.Stack {
         metricsEnabled: props?.enableMetrics,
         tracingEnabled: props?.enableTracing,
         dataTraceEnabled: props?.enableTracing,
-        loggingLevel: props?.logLevel && methodLoggingLevel(props.logLevel)
+        loggingLevel: props?.logLevel && toApigwLogLevel(props.logLevel)
       }
     });
 
@@ -56,7 +56,7 @@ export class GifGenStack extends cdk.Stack {
         GIPHY_SECRET_ID: secret.secretId
       },
       xrayEnabled: !!props?.enableTracing,
-      xrayLogLevel: props?.logLevel && xrayLoggingLevel(props.logLevel)
+      xrayLogLevel: props?.logLevel && toXrayLogLevel(props.logLevel)
     };
 
     const handleTrending = new XrayFunction(this, 'HandleTrending', {

@@ -15,6 +15,7 @@ export class MaskedParameter extends cdk.Resource {
       noEcho: true,
       description: props?.description
     });
+    this.parameter.overrideLogicalId(props.parameterName);
   }
 
   get valueAsString() {

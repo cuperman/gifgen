@@ -28,6 +28,7 @@ export class EncryptedSecret extends cdk.Resource {
       secretString: props.secretString,
       kmsKeyId: this.key.keyId
     });
+    this.secret.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
   }
 
   get secretId() {
