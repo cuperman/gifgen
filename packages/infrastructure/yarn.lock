@@ -742,11 +742,6 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
-"@cuperman/gifgen-apihandler@^0.2.0":
-  version "0.2.0"
-  resolved "https://npm.pkg.github.com/download/@cuperman/gifgen-apihandler/0.2.0/9c4f40164fd358e78920d3a919961ec5d34f5f58788da330a4d32e3e5e5dae64#cc28954e6209ea120c5d6f44b89442cee9017d9f"
-  integrity sha512-wS8RDkOyQUlqwgwq4FLOuRDrXZ3+wrMn8s00j98Osfw5Hu0lz9IgmbsUI4+JUnxdFIEiJfphXHjSVuInt0WEXQ==
-
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@istanbuljs/load-nyc-config/-/load-nyc-config-1.1.0.tgz#fd3db1d59ecf7cf121e80650bb86712f9b55eced"

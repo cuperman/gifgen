@@ -19,7 +19,8 @@ export class EncryptedSecret extends cdk.Resource {
     super(scope, id, props);
 
     this.key = new kms.Key(this, 'Key', {
-      description: props?.description ? `Key to encrypt: ${props.description}` : undefined
+      description: props?.description ? `Key to encrypt: ${props.description}` : undefined,
+      removalPolicy: cdk.RemovalPolicy.DESTROY
     });
 
     this.secret = new secretsmanager.CfnSecret(this, 'Secret', {

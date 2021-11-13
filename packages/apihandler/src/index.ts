@@ -99,9 +99,9 @@ export async function handleTrending(event: APIGatewayProxyEvent): Promise<APIGa
     const apiResponse = await giphyService.getTrending();
     console.log('api response', apiResponse);
     const apiResponseBody = await apiResponse.body;
-    console.log('api response body', apiResponseBody);
+    console.log('api response body', JSON.stringify(apiResponseBody, null, 2));
 
-    const imageUrl = apiResponseBody.data[0]?.url;
+    const imageUrl = apiResponseBody.data[0]?.images.downsized.url;
     if (typeof imageUrl === 'undefined') {
       return errorResult('no results');
     }
@@ -137,9 +137,9 @@ export async function handleSearch(event: APIGatewayProxyEvent): Promise<APIGate
     const apiResponse = await giphyService.getSearch(imageDetails.basename);
     console.log('api response', apiResponse);
     const apiResponseBody = await apiResponse.body;
-    console.log('api response body', apiResponseBody);
+    console.log('api response body', JSON.stringify(apiResponseBody, null, 2));
 
-    const imageUrl = apiResponseBody.data[0]?.url;
+    const imageUrl = apiResponseBody.data[0]?.images.downsized.url;
     if (typeof imageUrl === 'undefined') {
       return errorResult('no results');
     }
@@ -175,9 +175,9 @@ export async function handleTranslate(event: APIGatewayProxyEvent): Promise<APIG
     const apiResponse = await giphyService.getTranslate(imageDetails.basename);
     console.log('api response', apiResponse);
     const apiResponseBody = await apiResponse.body;
-    console.log('api response body', apiResponseBody);
+    console.log('api response body', JSON.stringify(apiResponseBody, null, 2));
 
-    const imageUrl = apiResponseBody.data.image_url;
+    const imageUrl = apiResponseBody.data.images.downsized.url;
 
     console.log('fetching image', imageUrl);
     const imageResponse = await fetch(imageUrl);
@@ -210,9 +210,9 @@ export async function handleRandom(event: APIGatewayProxyEvent): Promise<APIGate
     const apiResponse = await giphyService.getRandom(imageDetails.basename);
     console.log('api response', apiResponse);
     const apiResponseBody = await apiResponse.body;
-    console.log('api response body', apiResponseBody);
+    console.log('api response body', JSON.stringify(apiResponseBody, null, 2));
 
-    const imageUrl = apiResponseBody.data.image_url;
+    const imageUrl = apiResponseBody.data.images.downsized.url;
 
     console.log('fetching image', imageUrl);
     const imageResponse = await fetch(imageUrl);

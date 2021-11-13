@@ -31,7 +31,12 @@ export class GifGenStack extends cdk.Stack {
       })
     });
 
+    new cdk.CfnOutput(this, 'GiphySecretId', {
+      value: secret.secretId
+    });
+
     const restApi = new apigw.RestApi(this, 'RestApi', {
+      restApiName: 'GifGenRestApi',
       binaryMediaTypes: ['*/*'],
       deployOptions: {
         metricsEnabled: props?.enableMetrics,

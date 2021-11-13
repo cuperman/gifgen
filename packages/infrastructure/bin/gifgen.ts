@@ -7,7 +7,7 @@ import { LogLevel } from '../lib/logging';
 const app = new cdk.App();
 
 // observability flag enables metrics, tracing, and info logging
-const observe = app.node.tryGetContext('observe') === 'true';
+const observe = [true, 'true'].includes(app.node.tryGetContext('observe'));
 
 new GifGenStack(app, 'GifGen', {
   enableMetrics: !!observe,
