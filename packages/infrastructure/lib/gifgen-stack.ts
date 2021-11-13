@@ -3,6 +3,9 @@ import * as path from 'path';
 import * as cdk from '@aws-cdk/core';
 import * as lambda from '@aws-cdk/aws-lambda';
 import * as apigw from '@aws-cdk/aws-apigateway';
+import * as acm from '@aws-cdk/aws-certificatemanager';
+import * as route53 from '@aws-cdk/aws-route53';
+import * as targets from '@aws-cdk/aws-route53-targets';
 
 import { LogLevel, methodLoggingLevel, xrayLoggingLevel } from './logging';
 import { XrayFunction, XrayFunctionProps, EncryptedSecret, MaskedParameter } from './constructs';
@@ -10,9 +13,15 @@ import { XrayFunction, XrayFunctionProps, EncryptedSecret, MaskedParameter } fro
 const HANDLER_CODE_PATH = path.dirname(require.resolve('@cuperman/gifgen-apihandler/package.json'));
 
 export interface GifGenStackProps extends cdk.StackProps {
-  readonly enableMetrics?: boolean;
-  readonly enableTracing?: boolean;
-  readonly logLevel?: LogLevel;
+  readonly customDomain?: {
+    readonly zoneName: string;
+    readonly domainName: string;
+  };
+  readonly observability?: {
+    readonly enableMetrics?: boolean;
+    readonly enableTracing?: boolean;
+    readonly logLevel?: LogLevel;
+  };
 }
 
 export class GifGenStack extends cdk.Stack {
@@ -39,10 +48,10 @@ export class GifGenStack extends cdk.Stack {
       restApiName: 'GifGenRestApi',
       binaryMediaTypes: ['*/*'],
       deployOptions: {
-        metricsEnabled: props?.enableMetrics,
-        tracingEnabled: props?.enableTracing,
-        dataTraceEnabled: props?.enableTracing,
-        loggingLevel: props?.logLevel && methodLoggingLevel(props.logLevel)
+        metricsEnabled: props?.observability?.enableMetrics,
+        tracingEnabled: props?.observability?.enableTracing,
+        dataTraceEnabled: props?.observability?.enableTracing,
+        loggingLevel: props?.observability?.logLevel && methodLoggingLevel(props.observability.logLevel)
       }
     });
 
@@ -55,8 +64,8 @@ export class GifGenStack extends cdk.Stack {
       environment: {
         GIPHY_SECRET_ID: secret.secretId
       },
-      xrayEnabled: !!props?.enableTracing,
-      xrayLogLevel: props?.logLevel && xrayLoggingLevel(props.logLevel)
+      xrayEnabled: !!props?.observability?.enableTracing,
+      xrayLogLevel: props?.observability?.logLevel && xrayLoggingLevel(props.observability.logLevel)
     };
 
     const handleTrending = new XrayFunction(this, 'HandleTrending', {
@@ -99,5 +108,30 @@ export class GifGenStack extends cdk.Stack {
       .addResource('random')
       .addResource('{image}')
       .addMethod('GET', new apigw.LambdaIntegration(handleRandom));
+
+    const customDomain = props?.customDomain;
+    if (customDomain) {
+      const { zoneName, domainName } = customDomain;
+
+      const hostedZone = route53.HostedZone.fromLookup(this, 'HostedZone', {
+        domainName: zoneName
+      });
+
+      const certificate = new acm.Certificate(this, 'Certificate', {
+        domainName,
+        validation: acm.CertificateValidation.fromDns(hostedZone)
+      });
+
+      const restApiDomainName = restApi.addDomainName('DomainName', {
+        domainName,
+        certificate
+      });
+
+      new route53.ARecord(this, 'ARecord', {
+        zone: hostedZone,
+        recordName: domainName,
+        target: route53.RecordTarget.fromAlias(new targets.ApiGatewayDomain(restApiDomainName))
+      });
+    }
   }
 }
