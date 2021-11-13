@@ -28,9 +28,11 @@ describe('GifGenStack', () => {
 
   describe('with debugging', () => {
     const stack = new GifGenStack(app, 'GifGenStackWithDebugging', {
-      enableMetrics: true,
-      enableTracing: true,
-      logLevel: LogLevel.INFO
+      observability: {
+        enableMetrics: true,
+        enableTracing: true,
+        logLevel: LogLevel.INFO
+      }
     });
 
     it('adds debug configurations to production stage', () => {
