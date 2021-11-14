@@ -43,6 +43,8 @@ jobs:
 
       - name: Test packages
         run: yarn lerna run test
+        env:
+          AWS_REGION: us-east-1
 
       - name: Synthesize infrastructure
         run: yarn cdk synth
