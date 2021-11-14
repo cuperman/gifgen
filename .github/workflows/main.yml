@@ -48,7 +48,8 @@ jobs:
           AWS_REGION: us-east-1
           AWS_ACCESS_KEY_ID: AKIAIOSFODNN7EXAMPLE
           AWS_SECRET_ACCESS_KEY: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-          GIPHY_SECRET_ID: Secret-foo
+          # secret id must match the one used in the tests
+          GIPHY_SECRET_ID: Secret6C6F413D-mb34HuX4P5Mt
 
       - name: Synthesize infrastructure
         run: yarn cdk synth
