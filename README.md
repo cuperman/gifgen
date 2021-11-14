@@ -2,18 +2,41 @@
 
 Gif generator service
 
+## Configuration
+
+Create a `cdk.context.json` file with your configuration:
+
+```json
+{
+  "stackName": "GifGen",
+  "description": "Generate random gifs with an image URL",
+  "env": {
+    "account": "123456789012",
+    "region": "us-east-1"
+  },
+  "tags": {
+    "Application": "GifGen",
+    "Environment": "Production",
+    "Service": "Rest API"
+  },
+  "customDomain": {
+    "zoneName": "mydomain.com",
+    "domainName": "gif.mydomain.com"
+  },
+  "observability": {
+    "enableMetrics": true,
+    "enableTracing": true,
+    "logLevel": "INFO"
+  }
+}
+```
+
 ## Deploy
 
 Deploy the infrastructure to your AWS account with CDK
 
 ```bash
 npx aws-cdk deploy --app "npx @cuperman/gifgen-infrastructure" GifGen
-```
-
-Deploy with observability
-
-```bash
-npx aws-cdk deploy --app "npx @cuperman/gifgen-infrastructure" GifGen --context observe
 ```
 
 ## Use
@@ -26,6 +49,8 @@ When the deployment is complete, it will output the rest api endpoint, which can
 Outputs:
 GifGen.RestApiEndpoint1234567A = https://ab01c2def3.execute-api.us-east-1.amazonaws.com/prod/
 ```
+
+Or use your custom domain if specified.
 
 Use this to create gif URLs, like:
 
