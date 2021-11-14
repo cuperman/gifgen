@@ -112,6 +112,7 @@ export async function handleTrending(event: APIGatewayProxyEvent): Promise<APIGa
 
     return imageResult(imageResponse);
   } catch (error) {
+    console.error('error', error);
     return errorResult(error);
   }
 }
@@ -150,6 +151,7 @@ export async function handleSearch(event: APIGatewayProxyEvent): Promise<APIGate
 
     return imageResult(imageResponse);
   } catch (error) {
+    console.error('error', error);
     return errorResult(error);
   }
 }
@@ -185,6 +187,7 @@ export async function handleTranslate(event: APIGatewayProxyEvent): Promise<APIG
 
     return imageResult(imageResponse);
   } catch (error) {
+    console.error('error', error);
     return errorResult(error);
   }
 }
@@ -220,6 +223,7 @@ export async function handleRandom(event: APIGatewayProxyEvent): Promise<APIGate
 
     return imageResult(imageResponse);
   } catch (error) {
+    console.error('error', error);
     return errorResult(error);
   }
 }

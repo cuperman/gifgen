@@ -9,20 +9,20 @@ export enum StatusCode {
 export function badRequest(): APIGatewayProxyResult {
   return {
     statusCode: StatusCode.BAD_REQUEST,
-    body: 'bad request'
+    body: 'Bad request'
   };
 }
 
 export function notFound(): APIGatewayProxyResult {
   return {
     statusCode: StatusCode.NOT_FOUND,
-    body: 'not found'
+    body: 'Not found'
   };
 }
 
 export function internalServerError(): APIGatewayProxyResult {
   return {
     statusCode: StatusCode.INTERNAL_SERVER_ERROR,
-    body: 'internal server error'
+    body: 'Internal server error'
   };
 }

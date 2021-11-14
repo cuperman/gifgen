@@ -1,50 +1,97 @@
-import { handleRandom, handleSearch, handleTranslate, handleTrending } from '../src/index';
+import { nockBack } from './config/nock-back';
 import { buildEvent } from './factories';
+import { handleTrending, handleSearch, handleTranslate, handleRandom } from '../src/index';
 
-describe('handleRandom', () => {
-  const event = buildEvent({
-    pathParameters: {
-      tag: 'foo'
-    }
+describe('index', () => {
+  describe('handleTrending', () => {
+    const event = buildEvent();
+
+    it('returns 200', async () => {
+      const { nockDone } = await nockBack('index/handle-trending.json');
+      const result = await handleTrending(event);
+      nockDone();
+
+      expect(result.statusCode).toEqual(200);
+    });
+
+    it('is a gif', async () => {
+      const { nockDone } = await nockBack('index/handle-trending.json');
+      const result = await handleTrending(event);
+      nockDone();
+
+      expect(result.headers).toHaveProperty('content-type', 'image/gif');
+    });
   });
 
-  xit('returns 200', async () => {
-    const result = await handleRandom(event);
-    expect(result.statusCode).toEqual(200);
-  });
-});
+  describe('handleSearch', () => {
+    const event = buildEvent({
+      pathParameters: {
+        image: 'kanye.gif'
+      }
+    });
 
-describe('handleSearch', () => {
-  const event = buildEvent({
-    pathParameters: {
-      term: 'foo'
-    }
-  });
+    it('returns 200', async () => {
+      const { nockDone } = await nockBack('index/handle-search.json');
+      const result = await handleSearch(event);
+      nockDone();
 
-  xit('returns 200', async () => {
-    const result = await handleSearch(event);
-    expect(result.statusCode).toEqual(200);
-  });
-});
+      expect(result.statusCode).toEqual(200);
+    });
 
-describe('handleTranslate', () => {
-  const event = buildEvent({
-    pathParameters: {
-      term: 'foo'
-    }
+    it('is a gif', async () => {
+      const { nockDone } = await nockBack('index/handle-search.json');
+      const result = await handleSearch(event);
+      nockDone();
+
+      expect(result.headers).toHaveProperty('content-type', 'image/gif');
+    });
   });
 
-  xit('returns 200', async () => {
-    const result = await handleTranslate(event);
-    expect(result.statusCode).toEqual(200);
+  describe('handleTranslate', () => {
+    const event = buildEvent({
+      pathParameters: {
+        image: 'kanye.gif'
+      }
+    });
+
+    it('returns 200', async () => {
+      const { nockDone } = await nockBack('index/handle-translate.json');
+      const result = await handleTranslate(event);
+      nockDone();
+
+      expect(result.statusCode).toEqual(200);
+    });
+
+    it('is a gif', async () => {
+      const { nockDone } = await nockBack('index/handle-translate.json');
+      const result = await handleTranslate(event);
+      nockDone();
+
+      expect(result.headers).toHaveProperty('content-type', 'image/gif');
+    });
   });
-});
 
-describe('handleTrending', () => {
-  const event = buildEvent();
+  describe('handleRandom', () => {
+    const event = buildEvent({
+      pathParameters: {
+        image: 'kanye.gif'
+      }
+    });
 
-  xit('returns 200', async () => {
-    const result = await handleTrending(event);
-    expect(result.statusCode).toEqual(200);
+    it('returns 200', async () => {
+      const { nockDone } = await nockBack('index/handle-random.json');
+      const result = await handleRandom(event);
+      nockDone();
+
+      expect(result.statusCode).toEqual(200);
+    });
+
+    it('is a gif', async () => {
+      const { nockDone } = await nockBack('index/handle-random.json');
+      const result = await handleRandom(event);
+      nockDone();
+
+      expect(result.headers).toHaveProperty('content-type', 'image/gif');
+    });
   });
 });
