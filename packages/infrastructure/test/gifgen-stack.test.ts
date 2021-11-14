@@ -62,6 +62,7 @@ describe('GifGenStack', () => {
           },
           Environment: {
             Variables: {
+              LOG_LEVEL: 'INFO',
               AWS_XRAY_LOG_LEVEL: 'info'
             }
           }

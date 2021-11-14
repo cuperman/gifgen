@@ -62,7 +62,8 @@ export class GifGenStack extends cdk.Stack {
       memorySize: 1024, // TODO: tune this
       timeout: cdk.Duration.seconds(60), // TODO: tune this
       environment: {
-        GIPHY_SECRET_ID: secret.secretId
+        GIPHY_SECRET_ID: secret.secretId,
+        LOG_LEVEL: props?.logLevel || LogLevel.ERROR
       },
       xrayEnabled: !!props?.observability?.enableTracing,
       xrayLogLevel: props?.observability?.logLevel && toXrayLogLevel(props.observability.logLevel)
