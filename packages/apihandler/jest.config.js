@@ -5,5 +5,6 @@ module.exports = {
   transform: {
     '^.+\\.tsx?$': 'ts-jest'
   },
-  watchPathIgnorePatterns: ['/__tapes__/']
+  watchPathIgnorePatterns: ['/__tapes__/'],
+  setupFilesAfterEnv: ['<rootDir>/test/config/setup-tests.ts']
 };

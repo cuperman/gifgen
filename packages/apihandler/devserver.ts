@@ -2,38 +2,21 @@ import { APIGatewayProxyResult } from 'aws-lambda';
 import * as http from 'http';
 
 import { handleRandom, handleSearch, handleTrending } from './src/index';
+import { internalServerError, notFound } from './src/http-responses';
 import { buildEvent } from './test/factories';
 
 const HOSTNAME = '127.0.0.1';
 const PORT = 3000;
 
-function internalServerError(): APIGatewayProxyResult {
-  return {
-    statusCode: 500,
-    body: 'internal server error'
-  };
-}
-
-function notFound(): APIGatewayProxyResult {
-  return {
-    statusCode: 404,
-    body: 'not found'
-  };
-}
-
-async function getRandom(param: string) {
-  const event = buildEvent({
-    pathParameters: {
-      tag: param
-    }
-  });
-  return handleRandom(event);
+async function getTrending() {
+  const event = buildEvent();
+  return handleTrending(event);
 }
 
 async function getSearch(param: string) {
   const event = buildEvent({
     pathParameters: {
-      term: param
+      image: param
     }
   });
   return handleSearch(event);
@@ -42,15 +25,19 @@ async function getSearch(param: string) {
 async function getTranslate(param: string) {
   const event = buildEvent({
     pathParameters: {
-      term: param
+      image: param
     }
   });
   return handleRandom(event);
 }
 
-async function getTrending() {
-  const event = buildEvent();
-  return handleTrending(event);
+async function getRandom(param: string) {
+  const event = buildEvent({
+    pathParameters: {
+      image: param
+    }
+  });
+  return handleRandom(event);
 }
 
 async function route(req: http.IncomingMessage): Promise<APIGatewayProxyResult> {
@@ -59,14 +46,14 @@ async function route(req: http.IncomingMessage): Promise<APIGatewayProxyResult> 
   }
 
   let match;
-  if ((match = req.url.match(/random\/([\w%\.]+)/))) {
-    return getRandom(match[1]);
+  if (req.url.match(/trending\.gif/)) {
+    return getTrending();
   } else if ((match = req.url.match(/search\/([\w%\.]+)/))) {
     return getSearch(match[1]);
   } else if ((match = req.url.match(/translate\/([\w%\.]+)/))) {
     return getTranslate(match[1]);
-  } else if (req.url.match(/trending\.gif/)) {
-    return getTrending();
+  } else if ((match = req.url.match(/random\/([\w%\.]+)/))) {
+    return getRandom(match[1]);
   }
 
   return notFound();

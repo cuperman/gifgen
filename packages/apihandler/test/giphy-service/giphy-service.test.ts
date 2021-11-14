@@ -1,38 +1,17 @@
-import * as nock from 'nock';
 import { Headers } from 'node-fetch';
-import * as path from 'path';
 import { GiphyService } from '../../src/giphy-service/giphy-service';
+
+import { nockBack } from '../config/nock-back';
 
 const GIPHY_API_KEY_VARIABLE = 'GIPHY_API_KEY';
 
 describe('GiphyService', () => {
-  const nockBack = nock.back;
-  nockBack.fixtures = path.join(__dirname, '__tapes__');
-
-  const nockOptions: nock.BackOptions = {
-    after: (scope: nock.Scope) => {
-      scope.filteringPath(/api_key=\w*/, 'api_key=HIDDEN_CREDENTIALS');
-    },
-    afterRecord: (defs: nock.Definition[]) => {
-      defs.forEach((def) => (def.path = def.path.replace(/api_key=\w*/, 'api_key=HIDDEN_CREDENTIALS')));
-      return defs;
-    }
-  };
-
-  beforeEach(() => {
-    nockBack.setMode('record');
-  });
-
-  afterEach(() => {
-    nockBack.setMode('wild');
-  });
-
   describe('success', () => {
     const giphyService = new GiphyService(process.env[GIPHY_API_KEY_VARIABLE] || '');
 
     describe('#getSearch', () => {
       it('fetches trending', async () => {
-        const { nockDone } = await nockBack('search.json', nockOptions);
+        const { nockDone } = await nockBack('giphy-service/search.json');
         const response = await giphyService.getSearch('ye');
         const body = await response.body;
         expect(body.data).toBeInstanceOf(Array);
@@ -44,7 +23,7 @@ describe('GiphyService', () => {
 
     describe('#getTrending', () => {
       it('fetches trending', async () => {
-        const { nockDone } = await nockBack('trending.json', nockOptions);
+        const { nockDone } = await nockBack('giphy-service/trending.json');
         const response = await giphyService.getTrending();
         const body = await response.body;
         expect(body.data).toBeInstanceOf(Array);
@@ -56,7 +35,7 @@ describe('GiphyService', () => {
 
     describe('#getRandom', () => {
       it('fetches random with given tag', async () => {
-        const { nockDone } = await nockBack('random.json', nockOptions);
+        const { nockDone } = await nockBack('giphy-service/random.json');
         const response = await giphyService.getRandom('kanye west');
         const body = await response.body;
         expect(body).toEqual(expect.objectContaining({ data: expect.any(Object) }));
@@ -68,7 +47,7 @@ describe('GiphyService', () => {
 
     describe('#getTranslate', () => {
       it('fetches translate with given search term', async () => {
-        const { nockDone } = await nockBack('translate.json', nockOptions);
+        const { nockDone } = await nockBack('giphy-service/translate.json');
         const response = await giphyService.getTranslate('yeezus');
         const body = await response.body;
         expect(body).toEqual(expect.objectContaining({ data: expect.any(Object) }));
@@ -78,7 +57,7 @@ describe('GiphyService', () => {
       });
 
       it('fetches translate with given weirdness', async () => {
-        const { nockDone } = await nockBack('translate_with_weirdness.json', nockOptions);
+        const { nockDone } = await nockBack('giphy-service/translate_with_weirdness.json');
         const response = await giphyService.getTranslate('yeezus', 8);
         const body = await response.body;
         expect(body).toEqual(expect.objectContaining({ data: expect.any(Object) }));
@@ -93,9 +72,9 @@ describe('GiphyService', () => {
     const giphyService = new GiphyService('invalid_key');
 
     it('throws an error', async () => {
-      const { nockDone } = await nockBack('invalid_key.json');
-      await expect(giphyService.getTrending()).rejects.toEqual(
-        'Error when fetching from https://api.giphy.com/v1/gifs/trending?api_key=invalid_key&limit=1&rating=g (403)\n{"message":"Invalid authentication credentials"}'
+      const { nockDone } = await nockBack('giphy-service/invalid_key.json');
+      await expect(giphyService.getTrending()).rejects.toMatch(
+        /Error when fetching from https:\/\/api\.giphy\.com\/v1\/gifs\/trending\?api_key=\w+&limit=1&rating=g \(403\)\n{"message":"Invalid authentication credentials"}/
       );
       nockDone();
     });

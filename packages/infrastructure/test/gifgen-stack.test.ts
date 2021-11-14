@@ -1,6 +1,7 @@
-import { expect as expectCDK, haveResource } from '@aws-cdk/assert';
+import { expect as expectCDK, haveResource, haveResourceLike } from '@aws-cdk/assert';
 import * as cdk from '@aws-cdk/core';
-import { GifGenStack, LogLevel } from '../lib/gifgen-stack';
+import { GifGenStack } from '../lib/gifgen-stack';
+import { LogLevel } from '../lib/logging';
 
 describe('GifGenStack', () => {
   const app = new cdk.App();
@@ -52,7 +53,7 @@ describe('GifGenStack', () => {
 
     it('adds debug configurations to lambda functions', () => {
       expectCDK(stack).to(
-        haveResource('AWS::Lambda::Function', {
+        haveResourceLike('AWS::Lambda::Function', {
           Handler: 'dist/src/index.handleRandom',
           TracingConfig: {
             Mode: 'Active'

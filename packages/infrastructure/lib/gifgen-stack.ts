@@ -3,45 +3,11 @@ import * as path from 'path';
 import * as cdk from '@aws-cdk/core';
 import * as lambda from '@aws-cdk/aws-lambda';
 import * as apigw from '@aws-cdk/aws-apigateway';
-import * as iam from '@aws-cdk/aws-iam';
+
+import { LogLevel, toApigwLogLevel, toXrayLogLevel } from './logging';
+import { XrayFunction, XrayFunctionProps, EncryptedSecret, MaskedParameter } from './constructs';
 
 const HANDLER_CODE_PATH = path.dirname(require.resolve('@cuperman/gifgen-apihandler/package.json'));
-
-export enum LogLevel {
-  INFO = 'INFO',
-  ERROR = 'ERROR',
-  OFF = 'OFF'
-}
-
-function methodLoggingLevel(logLevel: LogLevel): apigw.MethodLoggingLevel {
-  switch (logLevel) {
-    case LogLevel.INFO:
-      return apigw.MethodLoggingLevel.INFO;
-    case LogLevel.ERROR:
-      return apigw.MethodLoggingLevel.ERROR;
-    case LogLevel.OFF:
-      return apigw.MethodLoggingLevel.OFF;
-  }
-}
-
-enum XrayLogLevel {
-  DEBUG = 'debug',
-  INFO = 'info',
-  WARN = 'warn',
-  ERROR = 'error',
-  SILENT = 'silent'
-}
-
-function xrayLoggingLevel(logLevel: LogLevel): XrayLogLevel {
-  switch (logLevel) {
-    case LogLevel.INFO:
-      return XrayLogLevel.INFO;
-    case LogLevel.ERROR:
-      return XrayLogLevel.ERROR;
-    case LogLevel.OFF:
-      return XrayLogLevel.SILENT;
-  }
-}
 
 export interface GifGenStackProps extends cdk.StackProps {
   readonly enableMetrics?: boolean;
@@ -53,80 +19,85 @@ export class GifGenStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: GifGenStackProps) {
     super(scope, id, props);
 
+    const param = new MaskedParameter(this, 'Param', {
+      parameterName: 'GiphyApiToken',
+      description: 'API token used for Giphy API access'
+    });
+
+    const secret = new EncryptedSecret(this, 'Secret', {
+      description: 'Giphy API credentials',
+      secretString: JSON.stringify({
+        apiToken: param.valueAsString
+      })
+    });
+
+    new cdk.CfnOutput(this, 'GiphySecretId', {
+      value: secret.secretId
+    });
+
     const restApi = new apigw.RestApi(this, 'RestApi', {
+      restApiName: 'GifGenRestApi',
       binaryMediaTypes: ['*/*'],
       deployOptions: {
         metricsEnabled: props?.enableMetrics,
         tracingEnabled: props?.enableTracing,
         dataTraceEnabled: props?.enableTracing,
-        loggingLevel: props?.logLevel && methodLoggingLevel(props.logLevel)
+        loggingLevel: props?.logLevel && toApigwLogLevel(props.logLevel)
       }
     });
 
-    const handlerRuntime = lambda.Runtime.NODEJS_14_X;
-    const handlerCode = lambda.Code.fromAsset(HANDLER_CODE_PATH);
-    const handlerEnvironment: { [name: string]: string } = {};
+    const handlerDefaults: XrayFunctionProps = {
+      runtime: lambda.Runtime.NODEJS_14_X,
+      code: lambda.Code.fromAsset(HANDLER_CODE_PATH),
+      handler: 'index.handler',
+      memorySize: 1024, // TODO: tune this
+      timeout: cdk.Duration.seconds(60), // TODO: tune this
+      environment: {
+        GIPHY_SECRET_ID: secret.secretId
+      },
+      xrayEnabled: !!props?.enableTracing,
+      xrayLogLevel: props?.logLevel && toXrayLogLevel(props.logLevel)
+    };
 
-    if (props?.logLevel) {
-      handlerEnvironment['AWS_XRAY_LOG_LEVEL'] = xrayLoggingLevel(props.logLevel);
-    }
-
-    // trending
-
-    const handleTrending = new lambda.Function(this, 'HandleTrending', {
-      runtime: handlerRuntime,
-      code: handlerCode,
-      environment: handlerEnvironment,
-      handler: 'dist/src/index.handleTrending',
-      tracing: props?.enableTracing ? lambda.Tracing.ACTIVE : undefined
+    const handleTrending = new XrayFunction(this, 'HandleTrending', {
+      ...handlerDefaults,
+      handler: 'dist/src/index.handleTrending'
     });
-    handleTrending.role?.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AWSXRayDaemonWriteAccess'));
+    secret.grantRead(handleTrending);
 
-    restApi.root.addResource('trending').addMethod('GET', new apigw.LambdaIntegration(handleTrending));
+    restApi.root.addResource('trending.gif').addMethod('GET', new apigw.LambdaIntegration(handleTrending));
 
-    // search
-
-    const handleSearch = new lambda.Function(this, 'HandleSearch', {
-      runtime: handlerRuntime,
-      code: handlerCode,
-      environment: handlerEnvironment,
-      handler: 'dist/src/index.handleSearch',
-      tracing: props?.enableTracing ? lambda.Tracing.ACTIVE : undefined
+    const handleSearch = new XrayFunction(this, 'HandleSearch', {
+      ...handlerDefaults,
+      handler: 'dist/src/index.handleSearch'
     });
-    handleSearch.role?.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AWSXRayDaemonWriteAccess'));
+    secret.grantRead(handleSearch);
 
     restApi.root
       .addResource('search')
-      .addResource('{term}')
+      .addResource('{image}')
       .addMethod('GET', new apigw.LambdaIntegration(handleSearch));
 
-    // translate
-
-    const handleTranslate = new lambda.Function(this, 'HandleTranslate', {
-      runtime: handlerRuntime,
-      code: handlerCode,
-      environment: handlerEnvironment,
-      handler: 'dist/src/index.handleTranslate',
-      tracing: props?.enableTracing ? lambda.Tracing.ACTIVE : undefined
+    const handleTranslate = new XrayFunction(this, 'HandleTranslate', {
+      ...handlerDefaults,
+      handler: 'dist/src/index.handleTranslate'
     });
-    handleTranslate.role?.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AWSXRayDaemonWriteAccess'));
+    secret.grantRead(handleTranslate);
 
     restApi.root
       .addResource('translate')
-      .addResource('{term}')
+      .addResource('{image}')
       .addMethod('GET', new apigw.LambdaIntegration(handleTranslate));
 
-    // random
-
-    const handleRandom = new lambda.Function(this, 'HandleRandom', {
-      runtime: handlerRuntime,
-      code: handlerCode,
-      environment: handlerEnvironment,
-      handler: 'dist/src/index.handleRandom',
-      tracing: props?.enableTracing ? lambda.Tracing.ACTIVE : undefined
+    const handleRandom = new XrayFunction(this, 'HandleRandom', {
+      ...handlerDefaults,
+      handler: 'dist/src/index.handleRandom'
     });
-    handleRandom.role?.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AWSXRayDaemonWriteAccess'));
+    secret.grantRead(handleRandom);
 
-    restApi.root.addResource('random').addResource('{tag}').addMethod('GET', new apigw.LambdaIntegration(handleRandom));
+    restApi.root
+      .addResource('random')
+      .addResource('{image}')
+      .addMethod('GET', new apigw.LambdaIntegration(handleRandom));
   }
 }
