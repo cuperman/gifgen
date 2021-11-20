@@ -1,7 +1,7 @@
 import { APIGatewayProxyResult } from 'aws-lambda';
 import * as http from 'http';
 
-import { handleRandom, handleSearch, handleTrending } from './src/index';
+import { handleRandom, handleSearch, handleTranslate, handleTrending } from './src/index';
 import { internalServerError, notFound } from './src/http-responses';
 import { buildEvent } from './test/factories';
 
@@ -28,7 +28,7 @@ async function getTranslate(param: string) {
       image: param
     }
   });
-  return handleRandom(event);
+  return handleTranslate(event);
 }
 
 async function getRandom(param: string) {

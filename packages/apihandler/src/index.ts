@@ -11,6 +11,7 @@ import fetch, { Response } from 'node-fetch';
 import { GiphyService } from './giphy-service';
 import { getSecretJson } from './aws';
 import { badRequest } from './http-responses';
+import { parsePathParam } from './url-parser';
 import * as logger from './logger';
 
 const GIPHY_SECRET_ID = process.env.GIPHY_SECRET_ID;
@@ -28,19 +29,6 @@ async function giphyApiToken(): Promise<string> {
   }
 
   return secret.apiToken;
-}
-
-function parseImageName(imageName: string): { basename: string; extension: string } {
-  const match = imageName.match(/([\w%]+)(\.gif)?/);
-
-  if (!match) {
-    throw new Error(`invalid image name: ${imageName}`);
-  }
-
-  return {
-    basename: match[1],
-    extension: 'gif'
-  };
 }
 
 function errorResult(error?: any): APIGatewayProxyResult {
@@ -129,14 +117,18 @@ export async function handleSearch(event: APIGatewayProxyEvent): Promise<APIGate
 
   try {
     logger.info('parse image name', imageName);
-    const imageDetails = parseImageName(imageName);
-    logger.info('image details', imageDetails);
+    const imagePath = parsePathParam(imageName);
+    logger.info('image path', imagePath);
+
+    if (imagePath.extension !== '.gif') {
+      throw new Error(`invalid image name: ${imageName}`);
+    }
 
     const apiKey = await giphyApiToken();
     const giphyService = new GiphyService(apiKey);
 
-    logger.info(`searching for image of "${imageDetails.basename}"`);
-    const apiResponse = await giphyService.getSearch(imageDetails.basename);
+    logger.info(`searching for image of "${imagePath.basename}"`);
+    const apiResponse = await giphyService.getSearch(imagePath.basename);
     logger.info('api response', apiResponse);
     const apiResponseBody = await apiResponse.body;
     logger.info('api response body', JSON.stringify(apiResponseBody, null, 2));
@@ -168,14 +160,18 @@ export async function handleTranslate(event: APIGatewayProxyEvent): Promise<APIG
 
   try {
     logger.info('parse image name', imageName);
-    const imageDetails = parseImageName(imageName);
-    logger.info('image details', imageDetails);
+    const imagePath = parsePathParam(imageName);
+    logger.info('image path', imagePath);
+
+    if (imagePath.extension !== '.gif') {
+      throw new Error(`invalid image name: ${imageName}`);
+    }
 
     const apiKey = await giphyApiToken();
     const giphyService = new GiphyService(apiKey);
 
-    logger.info(`translating "${imageDetails.basename}" to image`);
-    const apiResponse = await giphyService.getTranslate(imageDetails.basename);
+    logger.info(`translating "${imagePath.basename}" to image`);
+    const apiResponse = await giphyService.getTranslate(imagePath.basename);
     logger.info('api response', apiResponse);
     const apiResponseBody = await apiResponse.body;
     logger.info('api response body', JSON.stringify(apiResponseBody, null, 2));
@@ -204,14 +200,18 @@ export async function handleRandom(event: APIGatewayProxyEvent): Promise<APIGate
 
   try {
     logger.info('parse image name', imageName);
-    const imageDetails = parseImageName(imageName);
-    logger.info('image details', imageDetails);
+    const imagePath = parsePathParam(imageName);
+    logger.info('image path', imagePath);
+
+    if (imagePath.extension !== '.gif') {
+      throw new Error(`invalid image name: ${imageName}`);
+    }
 
     const apiKey = await giphyApiToken();
     const giphyService = new GiphyService(apiKey);
 
-    logger.info(`getting random image of "${imageDetails.basename}"`);
-    const apiResponse = await giphyService.getRandom(imageDetails.basename);
+    logger.info(`getting random image of "${imagePath.basename}"`);
+    const apiResponse = await giphyService.getRandom(imagePath.basename);
     logger.info('api response', apiResponse);
     const apiResponseBody = await apiResponse.body;
     logger.info('api response body', JSON.stringify(apiResponseBody, null, 2));
