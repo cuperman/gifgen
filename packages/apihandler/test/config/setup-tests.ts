@@ -2,9 +2,7 @@ import * as dotenv from 'dotenv';
 import * as nock from 'nock';
 import * as path from 'path';
 
-dotenv.config({
-  path: './.env-test'
-});
+dotenv.config();
 
 const nockBack = nock.back;
 nockBack.fixtures = path.join(__dirname, '../__tapes__');

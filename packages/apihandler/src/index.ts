@@ -13,14 +13,19 @@ import { getSecretJson } from './aws';
 import { badRequest } from './http-responses';
 import { parsePathParam } from './url-parser';
 import * as logger from './logger';
+import * as cache from './cache';
 
-const GIPHY_SECRET_ID = process.env.GIPHY_SECRET_ID;
+if (typeof process.env.GIPHY_SECRET_ID === 'undefined') {
+  throw new Error('GIPHY_SECRET_ID required');
+}
+const GIPHY_SECRET_ID: string = process.env.GIPHY_SECRET_ID;
+
+if (typeof process.env.CACHE_TABLE === 'undefined') {
+  throw new Error('CACHE_TABLE required');
+}
+const CACHE_TABLE: string = process.env.CACHE_TABLE;
 
 async function giphyApiToken(): Promise<string> {
-  if (typeof GIPHY_SECRET_ID === 'undefined') {
-    throw new Error('GIPHY_SECRET_ID required');
-  }
-
   logger.info(`getting secret from "${GIPHY_SECRET_ID}"`);
   const secret = await getSecretJson(GIPHY_SECRET_ID);
 
@@ -77,19 +82,37 @@ async function imageResult(imageResponse: Response): Promise<APIGatewayProxyResu
   };
 }
 
+function cacheKey(endpoint: string, termOrTimestamp: string, timestamp?: string): string {
+  if (timestamp) {
+    const term = termOrTimestamp;
+    return `${endpoint}/${term}?ts=${timestamp}`;
+  } else {
+    const timestamp = termOrTimestamp;
+    return `${endpoint}?ts=${timestamp}`;
+  }
+}
+
 export async function handleTrending(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
   logger.info('handleTrending', event);
 
+  const cacheTimestamp = event.queryStringParameters?.ts;
+
   try {
-    const apiKey = await giphyApiToken();
-    const giphyService = new GiphyService(apiKey);
+    const apiFetcher = async () => {
+      const apiKey = await giphyApiToken();
+      const giphyService = new GiphyService(apiKey);
 
-    logger.info('getting trending image');
-    const apiResponse = await giphyService.getTrending();
-    logger.info('api response', apiResponse);
-    const apiResponseBody = await apiResponse.body;
+      logger.info('getting trending image');
+      const apiResponse = await giphyService.getTrending();
+      logger.info('api response', apiResponse);
+      return apiResponse.body;
+    };
+
+    const apiResponseBody = await (cacheTimestamp
+      ? cache.fetch(CACHE_TABLE, cacheKey('trending', cacheTimestamp), apiFetcher)
+      : apiFetcher());
+
     logger.info('api response body', JSON.stringify(apiResponseBody, null, 2));
-
     const imageUrl = apiResponseBody.data[0]?.images.downsized.url;
     if (typeof imageUrl === 'undefined') {
       return errorResult('no results');
@@ -115,6 +138,8 @@ export async function handleSearch(event: APIGatewayProxyEvent): Promise<APIGate
     return badRequest();
   }
 
+  const cacheTimestamp = event.queryStringParameters?.ts;
+
   try {
     logger.info('parse image name', imageName);
     const imagePath = parsePathParam(imageName);
@@ -124,15 +149,22 @@ export async function handleSearch(event: APIGatewayProxyEvent): Promise<APIGate
       throw new Error(`invalid image name: ${imageName}`);
     }
 
-    const apiKey = await giphyApiToken();
-    const giphyService = new GiphyService(apiKey);
+    const term = imagePath.basename;
 
-    logger.info(`searching for image of "${imagePath.basename}"`);
-    const apiResponse = await giphyService.getSearch(imagePath.basename);
-    logger.info('api response', apiResponse);
-    const apiResponseBody = await apiResponse.body;
+    const apiFetcher = async () => {
+      const apiKey = await giphyApiToken();
+      const giphyService = new GiphyService(apiKey);
+      logger.info(`searching for image of "${term}"`);
+      const apiResponse = await giphyService.getSearch(term);
+      logger.info('api response', apiResponse);
+      return apiResponse.body;
+    };
+
+    const apiResponseBody = await (cacheTimestamp
+      ? cache.fetch(CACHE_TABLE, cacheKey('search', term, cacheTimestamp), apiFetcher)
+      : apiFetcher());
+
     logger.info('api response body', JSON.stringify(apiResponseBody, null, 2));
-
     const imageUrl = apiResponseBody.data[0]?.images.downsized.url;
     if (typeof imageUrl === 'undefined') {
       return errorResult('no results');
@@ -158,6 +190,8 @@ export async function handleTranslate(event: APIGatewayProxyEvent): Promise<APIG
     return badRequest();
   }
 
+  const cacheTimestamp = event.queryStringParameters?.ts;
+
   try {
     logger.info('parse image name', imageName);
     const imagePath = parsePathParam(imageName);
@@ -167,15 +201,22 @@ export async function handleTranslate(event: APIGatewayProxyEvent): Promise<APIG
       throw new Error(`invalid image name: ${imageName}`);
     }
 
-    const apiKey = await giphyApiToken();
-    const giphyService = new GiphyService(apiKey);
+    const term = imagePath.basename;
 
-    logger.info(`translating "${imagePath.basename}" to image`);
-    const apiResponse = await giphyService.getTranslate(imagePath.basename);
-    logger.info('api response', apiResponse);
-    const apiResponseBody = await apiResponse.body;
+    const apiFetcher = async () => {
+      const apiKey = await giphyApiToken();
+      const giphyService = new GiphyService(apiKey);
+      logger.info(`translating "${term}" to image`);
+      const apiResponse = await giphyService.getTranslate(term);
+      logger.info('api response', apiResponse);
+      return apiResponse.body;
+    };
+
+    const apiResponseBody = await (cacheTimestamp
+      ? cache.fetch(CACHE_TABLE, cacheKey('translate', term, cacheTimestamp), apiFetcher)
+      : apiFetcher());
+
     logger.info('api response body', JSON.stringify(apiResponseBody, null, 2));
-
     const imageUrl = apiResponseBody.data.images.downsized.url;
 
     logger.info('fetching image', imageUrl);
@@ -198,6 +239,8 @@ export async function handleRandom(event: APIGatewayProxyEvent): Promise<APIGate
     return badRequest();
   }
 
+  const cacheTimestamp = event.queryStringParameters?.ts;
+
   try {
     logger.info('parse image name', imageName);
     const imagePath = parsePathParam(imageName);
@@ -207,15 +250,22 @@ export async function handleRandom(event: APIGatewayProxyEvent): Promise<APIGate
       throw new Error(`invalid image name: ${imageName}`);
     }
 
-    const apiKey = await giphyApiToken();
-    const giphyService = new GiphyService(apiKey);
+    const tag = imagePath.basename;
 
-    logger.info(`getting random image of "${imagePath.basename}"`);
-    const apiResponse = await giphyService.getRandom(imagePath.basename);
-    logger.info('api response', apiResponse);
-    const apiResponseBody = await apiResponse.body;
+    const apiFetcher = async () => {
+      const apiKey = await giphyApiToken();
+      const giphyService = new GiphyService(apiKey);
+      logger.info(`getting random image of "${tag}"`);
+      const apiResponse = await giphyService.getRandom(tag);
+      logger.info('api response', apiResponse);
+      return apiResponse.body;
+    };
+
+    const apiResponseBody = await (cacheTimestamp
+      ? cache.fetch(CACHE_TABLE, cacheKey('random', tag, cacheTimestamp), apiFetcher)
+      : apiFetcher());
+
     logger.info('api response body', JSON.stringify(apiResponseBody, null, 2));
-
     const imageUrl = apiResponseBody.data.images.downsized.url;
 
     logger.info('fetching image', imageUrl);

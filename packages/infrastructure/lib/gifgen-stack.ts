@@ -1,16 +1,8 @@
-import * as path from 'path';
-
 import * as cdk from '@aws-cdk/core';
-import * as lambda from '@aws-cdk/aws-lambda';
-import * as apigw from '@aws-cdk/aws-apigateway';
-import * as acm from '@aws-cdk/aws-certificatemanager';
-import * as route53 from '@aws-cdk/aws-route53';
-import * as targets from '@aws-cdk/aws-route53-targets';
+import * as dynamodb from '@aws-cdk/aws-dynamodb';
 
-import { LogLevel, toApigwLogLevel, toXrayLogLevel } from './logging';
-import { XrayFunction, XrayFunctionProps, EncryptedSecret, MaskedParameter } from './constructs';
-
-const HANDLER_CODE_PATH = path.dirname(require.resolve('@cuperman/gifgen-apihandler/package.json'));
+import { LogLevel } from './logging';
+import { EncryptedSecret, MaskedParameter, GifGenRestApi, RestApiCustomDomain } from './constructs';
 
 export interface GifGenStackProps extends cdk.StackProps {
   readonly customDomain?: {
@@ -44,94 +36,36 @@ export class GifGenStack extends cdk.Stack {
       value: secret.secretId
     });
 
-    const restApi = new apigw.RestApi(this, 'RestApi', {
-      restApiName: 'GifGenRestApi',
-      binaryMediaTypes: ['*/*'],
-      deployOptions: {
-        metricsEnabled: props?.observability?.enableMetrics,
-        tracingEnabled: props?.observability?.enableTracing,
-        dataTraceEnabled: props?.observability?.enableTracing,
-        loggingLevel: props?.observability?.logLevel && toApigwLogLevel(props.observability.logLevel)
-      }
-    });
-
-    const handlerDefaults: XrayFunctionProps = {
-      runtime: lambda.Runtime.NODEJS_14_X,
-      code: lambda.Code.fromAsset(HANDLER_CODE_PATH),
-      handler: 'index.handler',
-      memorySize: 1024, // TODO: tune this
-      timeout: cdk.Duration.seconds(60), // TODO: tune this
-      environment: {
-        GIPHY_SECRET_ID: secret.secretId,
-        LOG_LEVEL: props?.observability?.logLevel || LogLevel.ERROR
+    const cache = new dynamodb.Table(this, 'Cache', {
+      partitionKey: {
+        name: 'cacheKey',
+        type: dynamodb.AttributeType.STRING
       },
-      xrayEnabled: !!props?.observability?.enableTracing,
-      xrayLogLevel: props?.observability?.logLevel && toXrayLogLevel(props.observability.logLevel)
-    };
-
-    const handleTrending = new XrayFunction(this, 'HandleTrending', {
-      ...handlerDefaults,
-      handler: 'dist/src/index.handleTrending'
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: cdk.RemovalPolicy.DESTROY
     });
-    secret.grantRead(handleTrending);
 
-    restApi.root.addResource('trending.gif').addMethod('GET', new apigw.LambdaIntegration(handleTrending));
-
-    const handleSearch = new XrayFunction(this, 'HandleSearch', {
-      ...handlerDefaults,
-      handler: 'dist/src/index.handleSearch'
+    new cdk.CfnOutput(this, 'CacheTable', {
+      value: cache.tableName
     });
-    secret.grantRead(handleSearch);
 
-    restApi.root
-      .addResource('search')
-      .addResource('{image}')
-      .addMethod('GET', new apigw.LambdaIntegration(handleSearch));
-
-    const handleTranslate = new XrayFunction(this, 'HandleTranslate', {
-      ...handlerDefaults,
-      handler: 'dist/src/index.handleTranslate'
+    const restApi = new GifGenRestApi(this, 'RestApi', {
+      restApiName: 'GifGenRestApi',
+      giphySecret: secret,
+      observability: props?.observability,
+      cacheTable: cache
     });
-    secret.grantRead(handleTranslate);
-
-    restApi.root
-      .addResource('translate')
-      .addResource('{image}')
-      .addMethod('GET', new apigw.LambdaIntegration(handleTranslate));
-
-    const handleRandom = new XrayFunction(this, 'HandleRandom', {
-      ...handlerDefaults,
-      handler: 'dist/src/index.handleRandom'
-    });
-    secret.grantRead(handleRandom);
-
-    restApi.root
-      .addResource('random')
-      .addResource('{image}')
-      .addMethod('GET', new apigw.LambdaIntegration(handleRandom));
 
     const customDomain = props?.customDomain;
     if (customDomain) {
-      const { zoneName, domainName } = customDomain;
-
-      const hostedZone = route53.HostedZone.fromLookup(this, 'HostedZone', {
-        domainName: zoneName
+      new RestApiCustomDomain(this, 'RestCustomDomain', {
+        restApi,
+        zoneName: customDomain.zoneName,
+        domainName: customDomain.domainName
       });
 
-      const certificate = new acm.Certificate(this, 'Certificate', {
-        domainName,
-        validation: acm.CertificateValidation.fromDns(hostedZone)
-      });
-
-      const restApiDomainName = restApi.addDomainName('DomainName', {
-        domainName,
-        certificate
-      });
-
-      new route53.ARecord(this, 'ARecord', {
-        zone: hostedZone,
-        recordName: domainName,
-        target: route53.RecordTarget.fromAlias(new targets.ApiGatewayDomain(restApiDomainName))
+      new cdk.CfnOutput(this, 'DomainName', {
+        value: customDomain.domainName
       });
     }
   }
