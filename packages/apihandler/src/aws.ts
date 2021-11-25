@@ -1,7 +1,18 @@
 import * as AWS from 'aws-sdk';
+import * as AWSXRay from 'aws-xray-sdk';
+
+function newSecretsManager() {
+  const secretsmanager = new AWS.SecretsManager();
+
+  if (process.env.AWS_XRAY_ENABLED === 'true') {
+    AWSXRay.captureAWSClient(secretsmanager);
+  }
+
+  return secretsmanager;
+}
 
 export async function getSecretString(secretId: string) {
-  const secretsmanager = new AWS.SecretsManager();
+  const secretsmanager = newSecretsManager();
 
   const response = await secretsmanager
     .getSecretValue({

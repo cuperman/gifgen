@@ -1,8 +1,26 @@
-import * as DynamoDB from 'aws-sdk/clients/dynamodb';
+import * as AWS from 'aws-sdk';
+import * as AWSXRay from 'aws-xray-sdk';
+
 import * as logger from './logger';
 
+interface TraceableDocumentClient extends AWS.DynamoDB.DocumentClient {
+  readonly service: AWS.DynamoDB;
+}
+
+function newDocumentClient() {
+  const documentClient = new AWS.DynamoDB.DocumentClient({
+    service: new AWS.DynamoDB()
+  });
+
+  if (process.env.AWS_XRAY_ENABLED === 'true') {
+    AWSXRay.captureAWSClient((documentClient as TraceableDocumentClient).service);
+  }
+
+  return documentClient;
+}
+
 export async function fetch(tableName: string, cacheKey: string, fetcher: () => Promise<any>): Promise<any> {
-  const ddb = new DynamoDB.DocumentClient();
+  const ddb = newDocumentClient();
 
   logger.info('reading from cache', tableName, cacheKey);
   const readResponse = await ddb
