@@ -97,7 +97,7 @@ describe('index', () => {
         }
       });
 
-      it('returns a gif on cache hit', async () => {
+      it('returns a gif', async () => {
         cacheFetch.mockResolvedValueOnce({
           data: [
             {
