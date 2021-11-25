@@ -1,5 +1,13 @@
 import { nockBack } from './config/nock-back';
 import { buildEvent } from './factories';
+
+const cacheFetch = jest.fn();
+jest.mock('../src/cache', () => {
+  return {
+    fetch: cacheFetch
+  };
+});
+
 import { handleTrending, handleSearch, handleTranslate, handleRandom } from '../src/index';
 
 describe('index', () => {
@@ -27,24 +35,24 @@ describe('index', () => {
     describe('with cache key', () => {
       const event = buildEvent({
         queryStringParameters: {
-          // TODO: if removing the tapes, you need to make sure this doesn't match at first
           ts: '1637418597727'
         }
       });
 
-      // TODO: how to test that image was fetched, cached, and returned?
-      it('returns a gif on cache miss', async () => {
-        const { nockDone } = await nockBack('index/handle-trending-cache-miss.json');
-        const result = await handleTrending(event);
-        nockDone();
+      it('returns a gif', async () => {
+        cacheFetch.mockResolvedValueOnce({
+          data: [
+            {
+              images: {
+                downsized: {
+                  url: 'https://media2.giphy.com/media/HyHXcBQ8JPnfzzj0dU/giphy-downsized.gif?cid=eb479444gb4i09usz4yf4n3nvtsff22c7kmjpy52l2jl87i5&rid=giphy-downsized.gif&ct=g'
+                }
+              }
+            }
+          ]
+        });
 
-        expect(result.statusCode).toEqual(200);
-        expect(result.headers).toHaveProperty('content-type', 'image/gif');
-      });
-
-      // TODO: how to test that image was found in the cache and returned without fetching?
-      it('returns a gif on cache hit', async () => {
-        const { nockDone } = await nockBack('index/handle-trending-cache-hit.json');
+        const { nockDone } = await nockBack('index/handle-trending-cache.json');
         const result = await handleTrending(event);
         nockDone();
 
@@ -85,24 +93,24 @@ describe('index', () => {
           image: 'kanye.gif'
         },
         queryStringParameters: {
-          // TODO: if removing the tapes, you need to make sure this doesn't match at first
           ts: '1637418597727'
         }
       });
 
-      // TODO: how to test that image was fetched, cached, and returned?
-      it('returns a gif on cache miss', async () => {
-        const { nockDone } = await nockBack('index/handle-search-cache-miss.json');
-        const result = await handleSearch(event);
-        nockDone();
-
-        expect(result.statusCode).toEqual(200);
-        expect(result.headers).toHaveProperty('content-type', 'image/gif');
-      });
-
-      // TODO: how to test that image was found in the cache and returned without fetching?
       it('returns a gif on cache hit', async () => {
-        const { nockDone } = await nockBack('index/handle-search-cache-hit.json');
+        cacheFetch.mockResolvedValueOnce({
+          data: [
+            {
+              images: {
+                downsized: {
+                  url: 'https://media0.giphy.com/media/zMCfqXkwjmTO8/giphy.gif?cid=eb479444nr6u4sp7nlbqk8mnibvkoj3yp1bt6lnxo2u9v0pj&rid=giphy.gif&ct=g'
+                }
+              }
+            }
+          ]
+        });
+
+        const { nockDone } = await nockBack('index/handle-search-cache.json');
         const result = await handleSearch(event);
         nockDone();
 
@@ -143,24 +151,22 @@ describe('index', () => {
           image: 'kanye.gif'
         },
         queryStringParameters: {
-          // TODO: if removing the tapes, you need to make sure this doesn't match at first
           ts: '1637418597727'
         }
       });
 
-      // TODO: how to test that image was fetched, cached, and returned?
-      it('returns a gif on cache miss', async () => {
-        const { nockDone } = await nockBack('index/handle-translate-cache-miss.json');
-        const result = await handleTranslate(event);
-        nockDone();
+      it('returns a gif', async () => {
+        cacheFetch.mockResolvedValueOnce({
+          data: {
+            images: {
+              downsized: {
+                url: 'https://media0.giphy.com/media/UuJl0dTmrkJjy/giphy-downsized.gif?cid=eb47944429224dd36f3d907996fb7e3d9cf37a3a4b9951b5&rid=giphy-downsized.gif&ct=g'
+              }
+            }
+          }
+        });
 
-        expect(result.statusCode).toEqual(200);
-        expect(result.headers).toHaveProperty('content-type', 'image/gif');
-      });
-
-      // TODO: how to test that image was found in the cache and returned without fetching?
-      it('returns a gif on cache hit', async () => {
-        const { nockDone } = await nockBack('index/handle-translate-cache-hit.json');
+        const { nockDone } = await nockBack('index/handle-translate-cache.json');
         const result = await handleTranslate(event);
         nockDone();
 
@@ -201,24 +207,22 @@ describe('index', () => {
           image: 'kanye.gif'
         },
         queryStringParameters: {
-          // TODO: if removing the tapes, you need to make sure this doesn't match at first
           ts: '1637333680157'
         }
       });
 
-      // TODO: how to test that image was fetched, cached, and returned?
-      it('returns a gif on cache miss', async () => {
-        const { nockDone } = await nockBack('index/handle-random-cache-miss.json');
-        const result = await handleRandom(event);
-        nockDone();
+      it('returns a gif', async () => {
+        cacheFetch.mockResolvedValueOnce({
+          data: {
+            images: {
+              downsized: {
+                url: 'https://media2.giphy.com/media/1hM7FonDBb0p8HAzbV/giphy.gif?cid=eb4794446c9be43c28dc62b81383d9d9a50985fc94edef37&rid=giphy.gif&ct=g'
+              }
+            }
+          }
+        });
 
-        expect(result.statusCode).toEqual(200);
-        expect(result.headers).toHaveProperty('content-type', 'image/gif');
-      });
-
-      // TODO: how to test that image was found in the cache and returned without fetching?
-      it('returns a gif on cache hit', async () => {
-        const { nockDone } = await nockBack('index/handle-random-cache-hit.json');
+        const { nockDone } = await nockBack('index/handle-random-cache.json');
         const result = await handleRandom(event);
         nockDone();
 
