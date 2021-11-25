@@ -1,18 +1,9 @@
-import * as DynamoDB from 'aws-sdk/clients/dynamodb';
 import * as logger from './logger';
+import { getDocument, putDocument } from './aws';
 
 export async function fetch(tableName: string, cacheKey: string, fetcher: () => Promise<any>): Promise<any> {
-  const ddb = new DynamoDB.DocumentClient();
-
   logger.info('reading from cache', tableName, cacheKey);
-  const readResponse = await ddb
-    .get({
-      TableName: tableName,
-      Key: {
-        cacheKey
-      }
-    })
-    .promise();
+  const readResponse = await getDocument(tableName, { cacheKey });
 
   if (readResponse.Item) {
     logger.info('cache hit');
@@ -25,15 +16,10 @@ export async function fetch(tableName: string, cacheKey: string, fetcher: () => 
   logger.info('fetch response', JSON.stringify(fetchResponse, null, 2));
 
   logger.info('writing to cache', tableName, cacheKey);
-  await ddb
-    .put({
-      TableName: tableName,
-      Item: {
-        cacheKey,
-        cacheData: fetchResponse
-      }
-    })
-    .promise();
+  await putDocument(tableName, {
+    cacheKey,
+    cacheData: fetchResponse
+  });
 
   return fetchResponse;
 }
