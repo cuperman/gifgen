@@ -14,11 +14,11 @@ All endpoint tests have been stubbed so no http requests are actually made. All 
 
 However, tests can be run to make actual http requests if the pre-recorded requests are deleted, then the new results are then stored locally.
 
-First, copy the .env-test-template and add your credentials to access remote resources:
+First, copy the .env-template and add your credentials to access remote resources:
 
 ```bash
-cp .env-test-template .env-test
-vi .env-test
+cp .env-template .env
+vi .env
 ```
 
 Then you can delete the tapes and rerun the tests:

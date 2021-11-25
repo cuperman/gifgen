@@ -1,3 +1,6 @@
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 import { APIGatewayProxyResult } from 'aws-lambda';
 import * as http from 'http';
 
@@ -8,34 +11,55 @@ import { buildEvent } from './test/factories';
 const HOSTNAME = '127.0.0.1';
 const PORT = 3000;
 
-async function getTrending() {
-  const event = buildEvent();
+async function getTrending(ts?: string) {
+  const event = buildEvent({
+    queryStringParameters: ts
+      ? {
+          ts
+        }
+      : null
+  });
   return handleTrending(event);
 }
 
-async function getSearch(param: string) {
+async function getSearch(param: string, ts?: string) {
   const event = buildEvent({
     pathParameters: {
       image: param
-    }
+    },
+    queryStringParameters: ts
+      ? {
+          ts
+        }
+      : null
   });
   return handleSearch(event);
 }
 
-async function getTranslate(param: string) {
+async function getTranslate(param: string, ts?: string) {
   const event = buildEvent({
     pathParameters: {
       image: param
-    }
+    },
+    queryStringParameters: ts
+      ? {
+          ts
+        }
+      : null
   });
   return handleTranslate(event);
 }
 
-async function getRandom(param: string) {
+async function getRandom(param: string, ts?: string) {
   const event = buildEvent({
     pathParameters: {
       image: param
-    }
+    },
+    queryStringParameters: ts
+      ? {
+          ts
+        }
+      : null
   });
   return handleRandom(event);
 }
@@ -45,15 +69,18 @@ async function route(req: http.IncomingMessage): Promise<APIGatewayProxyResult> 
     return internalServerError();
   }
 
+  const tsMatch = req.url.match(/\?ts=(\d+)/);
+  const ts = tsMatch && tsMatch[1] ? tsMatch[1] : undefined;
+
   let match;
   if (req.url.match(/trending\.gif/)) {
-    return getTrending();
+    return getTrending(ts);
   } else if ((match = req.url.match(/search\/([\w%\.]+)/))) {
-    return getSearch(match[1]);
+    return getSearch(match[1], ts);
   } else if ((match = req.url.match(/translate\/([\w%\.]+)/))) {
-    return getTranslate(match[1]);
+    return getTranslate(match[1], ts);
   } else if ((match = req.url.match(/random\/([\w%\.]+)/))) {
-    return getRandom(match[1]);
+    return getRandom(match[1], ts);
   }
 
   return notFound();

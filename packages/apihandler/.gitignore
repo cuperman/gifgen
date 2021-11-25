@@ -3,4 +3,4 @@
 *.d.ts
 node_modules/
 dist/
-.env-test
+.env
