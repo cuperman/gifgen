@@ -2,7 +2,7 @@
   "name": "@cuperman/gifgen-infrastructure",
   "description": "Infrastructure for GifGen service",
   "license": "MIT",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "author": {
     "name": "Jeff Cooper",
     "email": "jeff@cuperman.net"
@@ -48,7 +48,7 @@
     "@aws-cdk/aws-route53-targets": "^1.132.0",
     "@aws-cdk/aws-secretsmanager": "^1.132.0",
     "@aws-cdk/core": "1.132.0",
-    "@cuperman/gifgen-apihandler": "^0.2.0",
+    "@cuperman/gifgen-apihandler": "^1.0.0",
     "source-map-support": "^0.5.16"
   }
 }
