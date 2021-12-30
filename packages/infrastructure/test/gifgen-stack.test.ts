@@ -1,25 +1,26 @@
-import { expect as expectCDK, haveResource, haveResourceLike } from '@aws-cdk/assert';
-import * as cdk from '@aws-cdk/core';
+import * as cdk from 'aws-cdk-lib';
+import { Template } from 'aws-cdk-lib/assertions';
+
 import { GifGenStack } from '../lib/gifgen-stack';
 import { LogLevel } from '../lib/logging';
 
 describe('GifGenStack', () => {
-  const app = new cdk.App();
-
   describe('with default props', () => {
+    const app = new cdk.App();
     const stack = new GifGenStack(app, 'GifGenStackDefault');
+    const template = Template.fromStack(stack);
 
     it('has a rest api with binary media types', () => {
-      expectCDK(stack).to(
-        haveResource('AWS::ApiGateway::RestApi', {
+      expect(
+        template.hasResourceProperties('AWS::ApiGateway::RestApi', {
           BinaryMediaTypes: ['*/*']
         })
       );
     });
 
     it('has a production stage', () => {
-      expectCDK(stack).to(
-        haveResource('AWS::ApiGateway::Stage', {
+      expect(
+        template.hasResourceProperties('AWS::ApiGateway::Stage', {
           StageName: 'prod'
         })
       );
@@ -27,6 +28,7 @@ describe('GifGenStack', () => {
   });
 
   describe('with debugging', () => {
+    const app = new cdk.App();
     const stack = new GifGenStack(app, 'GifGenStackWithDebugging', {
       observability: {
         enableMetrics: true,
@@ -34,10 +36,11 @@ describe('GifGenStack', () => {
         logLevel: LogLevel.INFO
       }
     });
+    const template = Template.fromStack(stack);
 
     it('adds debug configurations to production stage', () => {
-      expectCDK(stack).to(
-        haveResource('AWS::ApiGateway::Stage', {
+      expect(
+        template.hasResourceProperties('AWS::ApiGateway::Stage', {
           StageName: 'prod',
           TracingEnabled: true,
           MethodSettings: [
@@ -54,8 +57,8 @@ describe('GifGenStack', () => {
     });
 
     it('adds debug configurations to lambda functions', () => {
-      expectCDK(stack).to(
-        haveResourceLike('AWS::Lambda::Function', {
+      expect(
+        template.hasResourceProperties('AWS::Lambda::Function', {
           Handler: 'dist/src/index.handleRandom',
           TracingConfig: {
             Mode: 'Active'
@@ -71,8 +74,8 @@ describe('GifGenStack', () => {
     });
 
     it('grants lambda functions xray write access', () => {
-      expectCDK(stack).to(
-        haveResource('AWS::IAM::Role', {
+      expect(
+        template.hasResourceProperties('AWS::IAM::Role', {
           AssumeRolePolicyDocument: {
             Version: '2012-10-17',
             Statement: [

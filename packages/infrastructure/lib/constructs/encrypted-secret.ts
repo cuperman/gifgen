@@ -1,26 +1,31 @@
-import * as cdk from '@aws-cdk/core';
-import * as kms from '@aws-cdk/aws-kms';
-import * as secretsmanager from '@aws-cdk/aws-secretsmanager';
-import * as iam from '@aws-cdk/aws-iam';
+import {
+  Resource,
+  ResourceProps,
+  aws_kms as kms,
+  aws_secretsmanager as secretsmanager,
+  RemovalPolicy,
+  aws_iam as iam
+} from 'aws-cdk-lib';
+import { Construct } from 'constructs';
 
 const KMS_DECRYPT_ACTIONS = ['kms:Decrypt'];
 const SECRETS_MANAGER_READ_ACTIONS = ['secretsmanager:GetSecretValue', 'secretsmanager:DescribeSecret'];
 
-export interface EncryptedSecretProps extends cdk.ResourceProps {
+export interface EncryptedSecretProps extends ResourceProps {
   readonly secretString: string;
   readonly description?: string;
 }
 
-export class EncryptedSecret extends cdk.Resource {
+export class EncryptedSecret extends Resource {
   readonly key: kms.IKey;
   readonly secret: secretsmanager.CfnSecret;
 
-  constructor(scope: cdk.Construct, id: string, props: EncryptedSecretProps) {
+  constructor(scope: Construct, id: string, props: EncryptedSecretProps) {
     super(scope, id, props);
 
     this.key = new kms.Key(this, 'Key', {
       description: props?.description ? `Key to encrypt: ${props.description}` : undefined,
-      removalPolicy: cdk.RemovalPolicy.DESTROY
+      removalPolicy: RemovalPolicy.DESTROY
     });
 
     this.secret = new secretsmanager.CfnSecret(this, 'Secret', {
@@ -28,7 +33,7 @@ export class EncryptedSecret extends cdk.Resource {
       secretString: props.secretString,
       kmsKeyId: this.key.keyId
     });
-    this.secret.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
+    this.secret.applyRemovalPolicy(RemovalPolicy.DESTROY);
   }
 
   get secretId() {

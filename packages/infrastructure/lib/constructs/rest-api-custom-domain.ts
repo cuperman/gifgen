@@ -1,17 +1,21 @@
-import * as cdk from '@aws-cdk/core';
-import * as route53 from '@aws-cdk/aws-route53';
-import * as acm from '@aws-cdk/aws-certificatemanager';
-import * as apigw from '@aws-cdk/aws-apigateway';
-import * as targets from '@aws-cdk/aws-route53-targets';
+import {
+  Resource,
+  ResourceProps,
+  aws_apigateway as apigw,
+  aws_route53 as route53,
+  aws_certificatemanager as acm,
+  aws_route53_targets as targets
+} from 'aws-cdk-lib';
+import { Construct } from 'constructs';
 
-export interface RestApiCustomDomainProps extends cdk.ResourceProps {
+export interface RestApiCustomDomainProps extends ResourceProps {
   readonly restApi: apigw.RestApi;
   readonly zoneName: string;
   readonly domainName: string;
 }
 
-export class RestApiCustomDomain extends cdk.Resource {
-  constructor(scope: cdk.Construct, id: string, props: RestApiCustomDomainProps) {
+export class RestApiCustomDomain extends Resource {
+  constructor(scope: Construct, id: string, props: RestApiCustomDomainProps) {
     super(scope, id, props);
 
     const hostedZone = route53.HostedZone.fromLookup(this, 'HostedZone', {

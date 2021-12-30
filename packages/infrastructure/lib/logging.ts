@@ -1,4 +1,4 @@
-import * as apigw from '@aws-cdk/aws-apigateway';
+import { aws_apigateway as apigw } from 'aws-cdk-lib';
 import { XrayLogLevel } from './constructs/xray-function';
 
 export enum LogLevel {
