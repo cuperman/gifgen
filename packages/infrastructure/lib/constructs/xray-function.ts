@@ -1,6 +1,5 @@
-import * as cdk from '@aws-cdk/core';
-import * as lambda from '@aws-cdk/aws-lambda';
-import * as iam from '@aws-cdk/aws-iam';
+import { aws_lambda as lambda, aws_iam as iam } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
 
 export enum XrayLogLevel {
   DEBUG = 'debug',
@@ -16,7 +15,7 @@ export interface XrayFunctionProps extends lambda.FunctionProps {
 }
 
 export class XrayFunction extends lambda.Function {
-  constructor(scope: cdk.Construct, id: string, props: XrayFunctionProps) {
+  constructor(scope: Construct, id: string, props: XrayFunctionProps) {
     const tracing: lambda.Tracing =
       props.xrayEnabled || typeof props.xrayEnabled === 'undefined' ? lambda.Tracing.ACTIVE : lambda.Tracing.DISABLED;
 

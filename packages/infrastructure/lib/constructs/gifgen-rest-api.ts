@@ -1,9 +1,7 @@
 import * as path from 'path';
 
-import * as cdk from '@aws-cdk/core';
-import * as apigw from '@aws-cdk/aws-apigateway';
-import * as lambda from '@aws-cdk/aws-lambda';
-import * as dynamodb from '@aws-cdk/aws-dynamodb';
+import { aws_dynamodb as dynamodb, aws_apigateway as apigw, aws_lambda as lambda, Duration } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
 
 import { LogLevel, toApigwLogLevel, toXrayLogLevel } from '../logging';
 import { XrayFunction, XrayFunctionProps } from './xray-function';
@@ -11,7 +9,7 @@ import { EncryptedSecret } from './encrypted-secret';
 
 const HANDLER_CODE_PATH = path.dirname(require.resolve('@cuperman/gifgen-apihandler/package.json'));
 
-export interface GifGenRestApiProps extends cdk.ResourceProps {
+export interface GifGenRestApiProps extends apigw.RestApiProps {
   readonly restApiName: string;
   readonly giphySecret: EncryptedSecret;
   readonly observability?: {
@@ -23,7 +21,7 @@ export interface GifGenRestApiProps extends cdk.ResourceProps {
 }
 
 export class GifGenRestApi extends apigw.RestApi {
-  constructor(scope: cdk.Construct, id: string, props: GifGenRestApiProps) {
+  constructor(scope: Construct, id: string, props: GifGenRestApiProps) {
     super(scope, id, {
       restApiName: props.restApiName,
       binaryMediaTypes: ['*/*'],
@@ -40,7 +38,7 @@ export class GifGenRestApi extends apigw.RestApi {
       code: lambda.Code.fromAsset(HANDLER_CODE_PATH),
       handler: 'index.handler',
       memorySize: 1024, // TODO: tune this
-      timeout: cdk.Duration.seconds(60), // TODO: tune this
+      timeout: Duration.seconds(60), // TODO: tune this
       environment: {
         GIPHY_SECRET_ID: props.giphySecret.secretId,
         LOG_LEVEL: props?.observability?.logLevel || LogLevel.ERROR,

@@ -1,10 +1,10 @@
-import * as cdk from '@aws-cdk/core';
-import * as dynamodb from '@aws-cdk/aws-dynamodb';
+import { Stack, StackProps, aws_dynamodb as dynamodb, CfnOutput, RemovalPolicy } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
 
 import { LogLevel } from './logging';
 import { EncryptedSecret, MaskedParameter, GifGenRestApi, RestApiCustomDomain } from './constructs';
 
-export interface GifGenStackProps extends cdk.StackProps {
+export interface GifGenStackProps extends StackProps {
   readonly customDomain?: {
     readonly zoneName: string;
     readonly domainName: string;
@@ -16,8 +16,8 @@ export interface GifGenStackProps extends cdk.StackProps {
   };
 }
 
-export class GifGenStack extends cdk.Stack {
-  constructor(scope: cdk.Construct, id: string, props?: GifGenStackProps) {
+export class GifGenStack extends Stack {
+  constructor(scope: Construct, id: string, props?: GifGenStackProps) {
     super(scope, id, props);
 
     const param = new MaskedParameter(this, 'Param', {
@@ -32,7 +32,7 @@ export class GifGenStack extends cdk.Stack {
       })
     });
 
-    new cdk.CfnOutput(this, 'GiphySecretId', {
+    new CfnOutput(this, 'GiphySecretId', {
       value: secret.secretId
     });
 
@@ -42,10 +42,10 @@ export class GifGenStack extends cdk.Stack {
         type: dynamodb.AttributeType.STRING
       },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      removalPolicy: cdk.RemovalPolicy.DESTROY
+      removalPolicy: RemovalPolicy.DESTROY
     });
 
-    new cdk.CfnOutput(this, 'CacheTable', {
+    new CfnOutput(this, 'CacheTable', {
       value: cache.tableName
     });
 
@@ -64,7 +64,7 @@ export class GifGenStack extends cdk.Stack {
         domainName: customDomain.domainName
       });
 
-      new cdk.CfnOutput(this, 'DomainName', {
+      new CfnOutput(this, 'DomainName', {
         value: customDomain.domainName
       });
     }
