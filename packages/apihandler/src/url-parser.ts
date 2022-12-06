@@ -4,7 +4,7 @@ export interface Path {
 }
 
 export function parsePathParam(pathParam: string): Path {
-  const match = pathParam.match(/([\w%]+)(\.[\w]+)?/);
+  const match = pathParam.match(/([\w%-]+)(\.[\w]+)?/);
 
   if (!match) {
     throw new Error(`invalid path: ${pathParam}`);
