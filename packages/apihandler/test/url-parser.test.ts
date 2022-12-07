@@ -31,4 +31,24 @@ describe('parsePathParam', () => {
       });
     });
   });
+
+  describe('with special characters', () => {
+    it('works with dashes', () => {
+      const path = parsePathParam('high-five.gif');
+
+      expect(path).toEqual({
+        basename: 'high-five',
+        extension: '.gif'
+      });
+    });
+
+    it('works with underscores', () => {
+      const path = parsePathParam('high_five.gif');
+
+      expect(path).toEqual({
+        basename: 'high_five',
+        extension: '.gif'
+      });
+    });
+  });
 });
