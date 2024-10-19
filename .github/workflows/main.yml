@@ -49,7 +49,7 @@ jobs:
           AWS_ACCESS_KEY_ID: AKIAIOSFODNN7EXAMPLE
           AWS_SECRET_ACCESS_KEY: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
           # aws resource ids must match the one used in the tests
-          GIPHY_SECRET_ID: Secret6C6F413D-mb34HuX4P5Mt
+          GIPHY_SECRET_ID: SecretA720EF05-i12QBJ2Bxjd1
           CACHE_TABLE: GifGen-Cache18F6EE16-1PRCT5I924JLW
 
       - name: Synthesize infrastructure
