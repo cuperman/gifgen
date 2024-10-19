@@ -34,7 +34,7 @@ export class GifGenRestApi extends apigw.RestApi {
     });
 
     const handlerDefaults: XrayFunctionProps = {
-      runtime: lambda.Runtime.NODEJS_14_X,
+      runtime: lambda.Runtime.NODEJS_14_X, // FIXME: use the latest runtime
       code: lambda.Code.fromAsset(HANDLER_CODE_PATH),
       handler: 'index.handler',
       memorySize: 1024, // TODO: tune this
