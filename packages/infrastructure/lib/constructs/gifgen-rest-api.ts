@@ -1,17 +1,17 @@
 import * as path from 'path';
 
 import { aws_dynamodb as dynamodb, aws_apigateway as apigw, aws_lambda as lambda, Duration } from 'aws-cdk-lib';
+import { ISecret } from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 
 import { LogLevel, toApigwLogLevel, toXrayLogLevel } from '../logging';
 import { XrayFunction, XrayFunctionProps } from './xray-function';
-import { EncryptedSecret } from './encrypted-secret';
 
 const HANDLER_CODE_PATH = path.dirname(require.resolve('@cuperman/gifgen-apihandler/package.json'));
 
 export interface GifGenRestApiProps extends apigw.RestApiProps {
   readonly restApiName: string;
-  readonly giphySecret: EncryptedSecret;
+  readonly giphySecret: ISecret;
   readonly observability?: {
     readonly enableMetrics?: boolean;
     readonly enableTracing?: boolean;
@@ -34,13 +34,13 @@ export class GifGenRestApi extends apigw.RestApi {
     });
 
     const handlerDefaults: XrayFunctionProps = {
-      runtime: lambda.Runtime.NODEJS_14_X,
+      runtime: lambda.Runtime.NODEJS_20_X,
       code: lambda.Code.fromAsset(HANDLER_CODE_PATH),
       handler: 'index.handler',
       memorySize: 1024, // TODO: tune this
       timeout: Duration.seconds(60), // TODO: tune this
       environment: {
-        GIPHY_SECRET_ID: props.giphySecret.secretId,
+        GIPHY_SECRET_ID: props.giphySecret.secretArn,
         LOG_LEVEL: props?.observability?.logLevel || LogLevel.ERROR,
         CACHE_TABLE: props.cacheTable.tableName
       },
