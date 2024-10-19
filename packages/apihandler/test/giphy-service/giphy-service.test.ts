@@ -74,7 +74,7 @@ describe('GiphyService', () => {
     it('throws an error', async () => {
       const { nockDone } = await nockBack('giphy-service/invalid_key.json');
       await expect(giphyService.getTrending()).rejects.toMatch(
-        /Error when fetching from https:\/\/api\.giphy\.com\/v1\/gifs\/trending\?api_key=\w+&limit=1&rating=g \(403\)\n{"message":"Invalid authentication credentials"}/
+        /Error when fetching from https:\/\/api\.giphy\.com\/v1\/gifs\/trending\?api_key=\w+&limit=1&rating=g \(401\)/
       );
       nockDone();
     });

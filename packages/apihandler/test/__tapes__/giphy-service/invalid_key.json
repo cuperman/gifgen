@@ -4,21 +4,24 @@
         "method": "GET",
         "path": "/v1/gifs/trending?api_key=HIDDEN_CREDENTIALS&limit=1&rating=g",
         "body": "",
-        "status": 403,
+        "status": 401,
         "response": {
-            "message": "Invalid authentication credentials"
+            "data": [],
+            "meta": {
+                "status": 401,
+                "msg": "Unauthorized",
+                "response_id": ""
+            }
         },
         "rawHeaders": [
             "Connection",
-            "close",
+            "keep-alive",
+            "Content-Length",
+            "143",
+            "Retry-After",
+            "0",
             "Content-Type",
-            "application/json; charset=utf-8",
-            "X-Cachiness-Shield-Rule",
-            "giphy_api_trending",
-            "X-Cachiness-Shield-Desired-TTL",
-            "900s",
-            "X-Cachiness-Shield-Actual-TTL",
-            "900.000",
+            "application/json",
             "Accept-Ranges",
             "bytes",
             "Access-Control-Allow-Origin",
@@ -28,7 +31,7 @@
             "Access-Control-Allow-Credentials",
             "true",
             "Access-Control-Allow-Headers",
-            "Authorization, Content-Type, Accept to Content-Type, Accept, x-requested-with, cache-control, X-GIPHY-SDK-NAME, X-GIPHY-SDK-VERSION, X-GIPHY-SDK-PLATFORM, X-CSRFToken",
+            "Authorization, Content-Type, Accept, x-requested-with, cache-control, X-GIPHY-SDK-NAME, X-GIPHY-SDK-VERSION, X-GIPHY-SDK-PLATFORM, X-CSRFToken",
             "X-Rule-Debug",
             "1",
             "X-Cachiness-Edge-Rule",
@@ -38,17 +41,17 @@
             "X-Cachiness-Edge-Actual-TTL",
             "900.000",
             "Date",
-            "Sun, 14 Nov 2021 18:49:43 GMT",
+            "Sat, 19 Oct 2024 19:39:19 GMT",
             "X-Served-By",
-            "cache-bwi5145-BWI, cache-sna10722-LGB",
+            "cache-iad-kcgs7200036-IAD, cache-bur-kbur8200061-BUR",
             "X-Cache-Hits",
             "0, 0",
             "X-Timer",
-            "S1636915783.257979,VS0,VE61",
+            "S1729366759.976196,VS0,VE77",
             "Strict-Transport-Security",
             "max-age=15465600",
-            "transfer-encoding",
-            "chunked"
+            "alt-svc",
+            "h3=\":443\";ma=86400,h3-29=\":443\";ma=86400,h3-27=\":443\";ma=86400"
         ],
         "responseIsBinary": false
     }
