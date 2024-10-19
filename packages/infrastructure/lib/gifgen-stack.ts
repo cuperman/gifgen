@@ -1,8 +1,9 @@
-import { Stack, StackProps, aws_dynamodb as dynamodb, CfnOutput, RemovalPolicy } from 'aws-cdk-lib';
+import { Stack, StackProps, aws_dynamodb as dynamodb, CfnOutput, RemovalPolicy, SecretValue } from 'aws-cdk-lib';
+import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 
 import { LogLevel } from './logging';
-import { EncryptedSecret, MaskedParameter, GifGenRestApi, RestApiCustomDomain } from './constructs';
+import { MaskedParameter, GifGenRestApi, RestApiCustomDomain } from './constructs';
 
 export interface GifGenStackProps extends StackProps {
   readonly customDomain?: {
@@ -25,15 +26,15 @@ export class GifGenStack extends Stack {
       description: 'API token used for Giphy API access'
     });
 
-    const secret = new EncryptedSecret(this, 'Secret', {
+    const secret = new Secret(this, 'Secret', {
       description: 'Giphy API credentials',
-      secretString: JSON.stringify({
-        apiToken: param.valueAsString
-      })
+      secretObjectValue: {
+        apiToken: SecretValue.unsafePlainText(param.valueAsString)
+      }
     });
 
     new CfnOutput(this, 'GiphySecretId', {
-      value: secret.secretId
+      value: secret.secretArn
     });
 
     const cache = new dynamodb.Table(this, 'Cache', {
